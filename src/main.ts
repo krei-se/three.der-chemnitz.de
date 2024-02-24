@@ -112,9 +112,9 @@ let femaleWaveAction: any
 loader.load( 'models/Idle_female.fbx', function ( female ) {
 
     female.name = "female"
-    female.scale.set(0.1, 0.1, 0.1)
-    female.position.set(-7,0,0)
-    female.rotateY(Math.PI/3)
+    female.scale.set(0.097, 0.097, 0.097)
+    female.position.set(7,0,0)
+    female.rotateY(-Math.PI/3)
 
     femaleMixer = new AnimationMixer(female)
     femaleAction = femaleMixer.clipAction(female.animations[0])
@@ -184,6 +184,11 @@ let cronWaveFemaleInterval: number = 10
 let lastcronFemaleTick: number = 0
 let lastcronMaleTick: number = 0
 
+let colorMap = []
+colorMap[0] = [0x681DF5, 0x1DF5BC, 0xF5501D, 0xF5E91D, 0xA36654, 0x584975]
+colorMap[1] = [0xE31DF5, 0x1DB3F5, 0xF5911D, 0x7FF51D, 0xA37F55, 0x796E7A]
+
+
 renderer.setAnimationLoop(function () {
 
     ticks = (clock.getDelta() * 1000) + ticks
@@ -196,9 +201,64 @@ renderer.setAnimationLoop(function () {
 
     if (loadingFemaleDone) {
         femaleMixer.update(clock.getDelta())
+        let female = scene.getObjectByName('female')
+        
+        let children = []
+
+        children[0] = female.getObjectByName('Beta_Surface')
+        children[1] = female.getObjectByName('Beta_Joints')
+        // console.log(children)
+        children[0].material.transparent = true
+        children[1].material.transparent = true
+        children[0].material.opacity = Math.sin(ticks / 2000) + .3
+        children[1].material.opacity = Math.sin(ticks / 2000) + .3
+        children[0].material.needsUpdate = true
+        children[1].material.needsUpdate = true
+
+        if (Math.sin(ticks / 2000) < -.3) {
+            female.visible = false
+            let colorIndex = Math.floor(Math.random() * colorMap[0].length)
+            let colorIndex2 = Math.floor(Math.random() * colorMap[1].length)
+            children[0].material.color = new Color(colorMap[0][colorIndex])
+            children[1].material.color = new Color(colorMap[1][colorIndex2])
+            children[0].material.needsUpdate = true
+            children[1].material.needsUpdate = true
+            // console.log(children)
+        }
+        else {
+            female.visible = true
+        }
+        
+        // console.log (children)
+
     }
     if (loadingMaleDone) {
         maleMixer.update(clock.getDelta())
+        let male = scene.getObjectByName('male')
+
+        let children = []
+        children[0] = male.getObjectByName('Alpha_Surface')
+        children[1] = male.getObjectByName('Alpha_Joints')
+        children[0].material.transparent = true
+        children[1].material.transparent = true
+        children[0].material.opacity = Math.sin(ticks / -2000) + .3
+        children[1].material.opacity = Math.sin(ticks / -2000) + .3
+        children[0].material.needsUpdate = true
+        children[1].material.needsUpdate = true
+
+        if (Math.sin(ticks / -2000) < -.3) {
+            male.visible = false
+            let colorIndex = Math.floor(Math.random() * colorMap[0].length)
+            let colorIndex2 = Math.floor(Math.random() * colorMap[1].length)
+            children[0].material.color = new Color(colorMap[0][colorIndex])
+            children[1].material.color = new Color(colorMap[1][colorIndex2])
+            children[0].material.needsUpdate = true
+            children[1].material.needsUpdate = true
+        }
+        else {
+            male.visible = true
+        }
+
     }
 
     /*

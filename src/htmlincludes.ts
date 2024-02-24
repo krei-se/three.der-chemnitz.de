@@ -1,4 +1,5 @@
 import derchemnitzLogo from './logo.svg'
+import kreiseLogo from './kreise.svg'
 
 export function getPageOverlayDiv (): HTMLDivElement {
 
@@ -15,6 +16,8 @@ export function getPageOverlayDiv (): HTMLDivElement {
   const logoImg: HTMLImageElement = document.createElement('img')
   logoImg.setAttribute('src', derchemnitzLogo)
   logoImg.setAttribute('alt', 'Der-Chemnitz.de Logo')
+  logoImg.setAttribute('width', 50)
+  logoImg.setAttribute('height', 'auto')
 
   logoImg.classList.add('logo')
   logoImg.classList.add('vanilla')
@@ -33,15 +36,33 @@ export function getPageOverlayDiv (): HTMLDivElement {
   explainParagraph.innerHTML = 'Der-Chemnitz.de ist ein 5D-Projekt zur Sichtbarmachung des "Der Chemnitz"'
 
   const authorParagraph = document.createElement('p');
-  authorParagraph.innerHTML = '<br>Wer arbeitet an Der Chemnitz?<br><br><a href="https://krei.se">IT-Beratung<br>Richard Wachler</a><br>Lohrstr. 42<br>09113 Chemnitz'
+  authorParagraph.innerHTML = '<br>Wer arbeitet an Der Chemnitz?<br>'
 
+  const kreiseParagraph = document.createElement('p');
+  kreiseParagraph.innerHTML = 'IT-Beratung<br>Richard Wachler</a><br>Lohrstr. 42<br>09113 Chemnitz'
+
+  const kreiseLink: HTMLAnchorElement = document.createElement('a')
+  kreiseLink.setAttribute('href', 'https://krei.se')
+
+
+  const kreiseImg: HTMLImageElement = document.createElement('img')
+  kreiseImg.setAttribute('src', kreiseLogo)
+  kreiseImg.setAttribute('width', 150)
+  kreiseImg.setAttribute('height', 'auto')
   
+  
+  kreiseImg.setAttribute('alt', 'Krei.se Logo')
+
+  kreiseLink.append(kreiseImg)
+
+
   pageOverlayDiv.append(introDiv)
   //pageOverlayDiv.append(titleParagraph)
   pageOverlayDiv.append(disclaimerParagraph)
   pageOverlayDiv.append(explainParagraph)
   pageOverlayDiv.append(authorParagraph)
-  
+  pageOverlayDiv.append(kreiseLink)
+  pageOverlayDiv.append(kreiseParagraph)
 
   
   /*
