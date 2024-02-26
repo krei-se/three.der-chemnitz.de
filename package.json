@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@types/three": "^0.161.2",
-    "three": "^0.161.0"
+    "suncalc": "^1.9.0",
+    "three": "^0.161.0",
+    "three-usdz-loader": "^1.0.7"
   }
 }

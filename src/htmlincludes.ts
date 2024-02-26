@@ -21,6 +21,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
 
   logoImg.classList.add('logo')
   logoImg.classList.add('vanilla')
+  logoImg.setAttribute('id', 'derchemnitzLogo')
 
   logoLink.append(logoImg)
 
@@ -33,36 +34,56 @@ export function getPageOverlayDiv (): HTMLDivElement {
   disclaimerParagraph.innerHTML = 'Dies ist derzeit keine offizielle Seite der Stadt Chemnitz'
 
   const explainParagraph = document.createElement('p');
-  explainParagraph.innerHTML = 'Der-Chemnitz.de ist ein 5D-Projekt zur Sichtbarmachung des "Der Chemnitz"'
+  explainParagraph.innerHTML = 'Der-Chemnitz.de ist ein 5D-Kunstprojekt zur Sichtbarmachung des "Der Chemnitz"'
+
+  const detailsParagraph = document.createElement('p');
+  detailsParagraph.innerHTML = 'Masse: 20.080.000 kg · Gr&ouml;&szlig;e: 1.001 m · BMI: ~20'
 
   const authorParagraph = document.createElement('p');
-  authorParagraph.innerHTML = '<br>Wer arbeitet an Der Chemnitz?<br>'
-
-  const kreiseParagraph = document.createElement('p');
-  kreiseParagraph.innerHTML = 'IT-Beratung<br>Richard Wachler</a><br>Lohrstr. 42<br>09113 Chemnitz'
+  authorParagraph.innerHTML = '<br>Wer baut an Der Chemnitz?<br>'
+  authorParagraph.style.paddingBottom = '2em'
 
   const kreiseLink: HTMLAnchorElement = document.createElement('a')
   kreiseLink.setAttribute('href', 'https://krei.se')
+  kreiseLink.style.margin = '0'
 
+  
 
   const kreiseImg: HTMLImageElement = document.createElement('img')
   kreiseImg.setAttribute('src', kreiseLogo)
   kreiseImg.setAttribute('width', 150)
   kreiseImg.setAttribute('height', 'auto')
+  kreiseImg.setAttribute('id', 'kreiseLogo')
   
+  kreiseImg.classList.add('kreiseLogo')
+  kreiseImg.classList.add('vanilla')
   
   kreiseImg.setAttribute('alt', 'Krei.se Logo')
 
+
   kreiseLink.append(kreiseImg)
+
+
+  const kreiseParagraph = document.createElement('p');
+  kreiseParagraph.innerHTML = 'IT-Beratung<br>Richard Wachler</a><br>Lohrstr. 42<br>09113 Chemnitz'
+  kreiseParagraph.style.margin = '0'
+
+  const ccParagraph = document.createElement('p');
+  ccParagraph.innerHTML = '<a href="cccredits.html"><img src="ccheart.svg" width="50" height="auto"></a>'
+  ccParagraph.style.paddingBottom = '2em'
+
 
 
   pageOverlayDiv.append(introDiv)
   //pageOverlayDiv.append(titleParagraph)
   pageOverlayDiv.append(disclaimerParagraph)
   pageOverlayDiv.append(explainParagraph)
+  pageOverlayDiv.append(detailsParagraph)
   pageOverlayDiv.append(authorParagraph)
   pageOverlayDiv.append(kreiseLink)
   pageOverlayDiv.append(kreiseParagraph)
+
+  pageOverlayDiv.append(ccParagraph)
 
   
   /*

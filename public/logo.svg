@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.2" width="22.13mm" height="33.14mm" viewBox="1394 1293 2213 3314" preserveAspectRatio="xMidYMid" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:presentation="http://sun.com/xmlns/staroffice/presentation" xmlns:smil="http://www.w3.org/2001/SMIL20/" xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xml:space="preserve">
+<svg version="1.2" width="21.07mm" height="32.08mm" viewBox="1447 1346 2107 3208" preserveAspectRatio="xMidYMid" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:presentation="http://sun.com/xmlns/staroffice/presentation" xmlns:smil="http://www.w3.org/2001/SMIL20/" xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xml:space="preserve">
  <defs class="EmbeddedBulletChars">
   <g id="bullet-char-template-57356" transform="scale(0.00048828125,-0.00048828125)">
    <path d="M 580,1141 L 1163,571 580,0 -4,571 580,1141 Z"/>
@@ -36,26 +36,26 @@
  <g class="Page">
   <g class="com.sun.star.drawing.EllipseShape">
    <g id="id3">
-    <rect class="BoundingBox" stroke="none" fill="none" x="1394" y="3394" width="2213" height="1213"/>
-    <path fill="none" stroke="rgb(0,0,0)" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 1500,4500 C 1500,4324 1546,4152 1634,4000 1722,3848 1848,3722 2000,3634 2152,3546 2324,3500 2500,3500 2676,3500 2848,3546 3000,3634 3152,3722 3278,3848 3366,4000 3454,4152 3500,4324 3500,4500 L 3500,4500"/>
+    <rect class="BoundingBox" stroke="none" fill="none" x="1447" y="3447" width="2107" height="1107"/>
+    <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" stroke-linecap="round" d="M 1500,4500 C 1500,4324 1546,4152 1634,4000 1722,3848 1848,3722 2000,3634 2152,3546 2324,3500 2500,3500 2676,3500 2848,3546 3000,3634 3152,3722 3278,3848 3366,4000 3454,4152 3500,4324 3500,4500 L 3500,4500"/>
    </g>
   </g>
   <g class="com.sun.star.drawing.EllipseShape">
    <g id="id4">
-    <rect class="BoundingBox" stroke="none" fill="none" x="1394" y="1293" width="2213" height="1314"/>
-    <path fill="none" stroke="rgb(0,0,0)" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 3500,1400 C 3500,1593 3454,1783 3366,1950 3278,2117 3152,2256 3000,2353 2848,2449 2676,2500 2500,2500 2324,2500 2152,2449 2000,2353 1848,2256 1722,2117 1634,1950 1546,1783 1500,1593 1500,1400 L 1500,1400"/>
+    <rect class="BoundingBox" stroke="none" fill="none" x="1447" y="1346" width="2107" height="1208"/>
+    <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" stroke-linecap="round" d="M 3500,1400 C 3500,1593 3454,1783 3366,1950 3278,2117 3152,2256 3000,2353 2848,2449 2676,2500 2500,2500 2324,2500 2152,2449 2000,2353 1848,2256 1722,2117 1634,1950 1546,1783 1500,1593 1500,1400 L 1500,1400"/>
    </g>
   </g>
   <g class="com.sun.star.drawing.LineShape">
    <g id="id5">
     <rect class="BoundingBox" stroke="none" fill="none" x="1447" y="1447" width="2107" height="107"/>
-    <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" stroke-linecap="round" d="M 1500,1500 L 3500,1500"/>
+    <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" d="M 1500,1500 L 3500,1500"/>
    </g>
   </g>
   <g class="com.sun.star.drawing.LineShape">
    <g id="id6">
-    <rect class="BoundingBox" stroke="none" fill="none" x="2394" y="2394" width="213" height="1213"/>
-    <path fill="none" stroke="rgb(0,0,0)" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 2500,3500 L 2500,2500"/>
+    <rect class="BoundingBox" stroke="none" fill="none" x="2447" y="2447" width="107" height="1107"/>
+    <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" stroke-linecap="round" d="M 2500,3500 L 2500,2500"/>
    </g>
   </g>
  </g>

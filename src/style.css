@@ -88,6 +88,13 @@ div#intro {
   filter: drop-shadow(0 0 2em #7bda00);
 }
 
+.kreiseLogo {
+  height: 3em;
+  padding-bottom: 0em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
 .card {
   padding: 2em;
 }
