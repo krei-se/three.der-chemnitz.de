@@ -15,6 +15,7 @@
     "vite-plugin-javascript-obfuscator": "^3.1.0"
   },
   "dependencies": {
+    "@lume/three-meshline": "^4.0.5",
     "@types/three": "^0.161.2",
     "suncalc": "^1.9.0",
     "three": "^0.161.0",

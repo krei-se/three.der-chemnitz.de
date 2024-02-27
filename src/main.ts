@@ -1,11 +1,12 @@
 import SunCalc from 'suncalc'
 import type { GetSunPositionResult, GetTimesResult } from 'suncalc'
 
-import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper } from 'three'
+import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper, AxesHelper } from 'three'
 import './style.css'
 import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 import { FBXLoader, GLTFLoader, OrbitControls } from 'three/examples/jsm/Addons.js'
-import { getPageOverlayDiv } from './htmlincludes'
+import { getPageOverlayDiv, getOSMOverlayDiv } from './htmlincludes'
+import Stats from 'three/examples/jsm/libs/stats.module'
 
 const appDiv: HTMLDivElement = document.querySelector('#app') ?? document.createElement('div')
 
@@ -13,6 +14,7 @@ const canvas: HTMLCanvasElement = document.createElement('canvas')
 canvas.id = 'scene'
 
 document.body.append(getPageOverlayDiv())
+document.body.append(getOSMOverlayDiv())
 
 appDiv.append(canvas)
 
@@ -30,7 +32,7 @@ if (sunPosition.altitude > 0.1) {
     brightness = 255
 }
 
-//brightness = 0
+// brightness = 0
 
 if (brightness === 0) {
 
@@ -77,14 +79,15 @@ const scene = new Scene();
 scene.background = new Color('white')
 
 import citymapTextureFile from './textures/chemnitzOSM.png'
-import { USDZLoader } from 'three-usdz-loader'
 import ChemnitzOSM from './ChemnitzOSM'
 const citymapTexture = new TextureLoader().load(citymapTextureFile)
 
-const mesh = new Mesh( new CircleGeometry( 40, 50 ), new MeshPhongMaterial() );
+const mesh = new Mesh( new CircleGeometry( 150, 50 ), new MeshPhongMaterial({ color: 'lightgrey' }) );
 mesh.rotation.x = - Math.PI / 2;
+mesh.position.y = -0.3
 mesh.receiveShadow = false;
-mesh.material.map = citymapTexture
+//mesh.material.map = citymapTexture
+mesh.visible = false
 scene.add( mesh )
 
 let topColor: number = 0xfcad83
@@ -164,7 +167,7 @@ loader.load( 'models/' + modelFileNamePrefix + 'female.fbx', function ( female )
 
     female.name = "female"
     female.scale.set(0.09, 0.09, 0.09)
-    female.position.set(5,0,0)
+    female.position.set(0,0,0)
     female.rotateY(-Math.PI/3)
 
     femaleMixer = new AnimationMixer(female)
@@ -201,7 +204,7 @@ loader.load( 'models/' + modelFileNamePrefix + 'male.fbx', function ( male ) {
 
     male.name = "male"
     male.scale.set(0.09, 0.09, 0.09)
-    male.position.set(5,0,0)
+    male.position.set(0,0,0)
     male.rotateY(-Math.PI/3)
 
     maleMixer = new AnimationMixer(male)
@@ -235,17 +238,18 @@ gltfloader.load('models/german_post_box.glb', function (postbox) {
     let postboxModel = postbox.scene
 
     postboxModel.name = 'postbox'
-    postboxModel.position.set(11,0,-5)
-    // postboxModel.rotateY(Math.PI * .8)
+    postboxModel.position.set(6,0,5)
+    postboxModel.rotateY(Math.PI * .2)
     postboxModel.scale.set (0.1, 0.1, 0.1)
 
-    scene.add(postboxModel)
+       scene.add(postboxModel)
+    
 
     const postboxHelper: BoxHelper = new BoxHelper(postboxModel, 'orange')
     // postboxHelper.position.set(11,0,-5)
     // postboxHelper.rotateY(Math.PI * .8)
     
-    scene.add(postboxHelper)
+    // scene.add(postboxHelper)
 
 })
 
@@ -254,16 +258,18 @@ gltfloader.load('models/mfp_office_printer.glb', function (printer) {
     let printerModel = printer.scene
 
     printerModel.name = 'printer'
-    printerModel.position.set(5,1,-5)
-    // printerModel.rotateY(Math.PI * .7)
+    printerModel.position.set(4,1,-2)
+    printerModel.rotateY(-Math.PI * .2)
     printerModel.scale.set (0.03, 0.03, 0.03)
 
-    scene.add(printerModel)
+    if (brightness === 255) {
+        scene.add(printerModel)
+    }
     // scene.add(postboxBoundingBox)
 
     const printerHelper: BoxHelper = new BoxHelper(printerModel, 'blue')
     
-    scene.add(printerHelper)
+    // scene.add(printerHelper)
 
 })
 
@@ -277,6 +283,14 @@ if (brightness === 0) {
 }
 
 const clock = new Clock()
+
+const stats: Stats = new Stats()
+if (import.meta.env.DEV) {
+  document.body.appendChild(stats.dom)
+}
+
+
+
 let ticks: number = 0
 
 let cronWaveFemaleInterval: number = 10
@@ -302,9 +316,12 @@ let lastColorChangeTick = 0
 if (import.meta.env.DEV) {
 
     const gridHelperInstance: GridHelper = new GridHelper(40, 40, 'orange', 'darkblue')
-    gridHelperInstance.position.y = +0.01
+    gridHelperInstance.position.y = -0.02
     gridHelperInstance.visible = true
     scene.add(gridHelperInstance)
+
+    const axesHelperInstance: AxesHelper = new AxesHelper(5)
+    scene.add(axesHelperInstance)
 
 }
 
@@ -326,15 +343,25 @@ window.addEventListener( 'pointermove', onPointerMove );
 
 let chemnitzOSM = new ChemnitzOSM()
 
+ scene.add(chemnitzOSM.mesh)
+
+let delta: number = 0
+
 renderer.setAnimationLoop(function () {
 
-    ticks = (clock.getDelta() * 1000) + ticks
+    delta = clock.getDelta()
 
-    cameraControls.update(clock.getDelta())
+    ticks += (delta * 1000)
+
+    cameraControls.update(delta)
+
+    if (import.meta.env.DEV) {
+        stats.update()
+    }
 
     renderer.render( scene, camera );
 
-    pointLight.position.set(0, (Math.sin(ticks / 1000) * 5) + 15, 0)
+    pointLight.position.set(0, (Math.sin(ticks / 1000) * 5) + 15, 10)
 
     if (ticks > (lastColorChangeTick + 200)) {
 
@@ -398,7 +425,7 @@ renderer.setAnimationLoop(function () {
     }
 
     if (loadingFemaleDone) {
-        femaleMixer.update(clock.getDelta())
+        femaleMixer.update(delta)
         let female = scene.getObjectByName('female')
 
         // console.log(female)
@@ -426,7 +453,7 @@ renderer.setAnimationLoop(function () {
 
     }
     if (loadingMaleDone) {
-        maleMixer.update(clock.getDelta())
+        maleMixer.update(delta)
         let male = scene.getObjectByName('male')
 
         let children = []
@@ -465,7 +492,9 @@ renderer.setAnimationLoop(function () {
     }
     */
 
-    scene.rotation.y = (Math.sin(ticks / 100000) * (Math.PI*2))
+    //console.log(ticks)
+
+    // scene.rotation.y = (Math.sin(ticks / 60000) * (Math.PI*2))
 
     if (resizeRendererToDisplaySize(renderer)) {
 

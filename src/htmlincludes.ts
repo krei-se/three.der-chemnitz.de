@@ -74,6 +74,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
 
 
 
+
   pageOverlayDiv.append(introDiv)
   //pageOverlayDiv.append(titleParagraph)
   pageOverlayDiv.append(disclaimerParagraph)
@@ -105,6 +106,18 @@ export function getPageOverlayDiv (): HTMLDivElement {
   //introDiv.append(infoParagraph)
 
   return pageOverlayDiv
+}
+
+
+export function getOSMOverlayDiv (): HTMLDivElement {
+
+  let osmDiv = document.createElement('div')
+
+  osmDiv.innerHTML = 'Karte hergestellt aus <a href="https://www.openstreetmap.org">OpenStreetMap-Daten</a> | Lizenz: <a href="https://opendatacommons.org/licenses/odbl/">Open Database License (ODbL)</a>'
+  osmDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; right: 0;'
+
+  return osmDiv
+
 }
 
 export function fadeoutDatenschutzAndInfoParagraphs (): void {
