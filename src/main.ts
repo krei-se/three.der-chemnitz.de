@@ -39,6 +39,8 @@ if (brightness === 0) {
     document.body.style.color = 'white'
     document.getElementById('kreiseLogo').style.cssText = 'filter: invert(1);'
     document.getElementById('derchemnitzLogo').style.cssText = 'filter: invert(1);'
+    document.getElementById('ccLogo').style.cssText = 'filter: invert(1);'
+    
 
 }
 
@@ -178,7 +180,7 @@ loader.load( 'models/' + modelFileNamePrefix + 'female.fbx', function ( female )
 
     loadingFemaleDone = true
 
-    femaleAction.play()
+    // femaleAction.play()
     scene.add(female);
 
     console.log(female)
@@ -217,14 +219,14 @@ loader.load( 'models/' + modelFileNamePrefix + 'male.fbx', function ( male ) {
 
     loadingMaleDone = true
 
-    maleAction.play()
+    // 
     scene.add( male );
 
 
     loader.load( 'models/waving.fbx', function ( wavingObject ) {
 
         maleWaveAction = maleMixer.clipAction(wavingObject.animations[0])
-        maleWaveAction.timeScale = 5
+        //maleWaveAction.timeScale = 5
 
     })
 
@@ -238,18 +240,25 @@ gltfloader.load('models/german_post_box.glb', function (postbox) {
     let postboxModel = postbox.scene
 
     postboxModel.name = 'postbox'
-    postboxModel.position.set(6,0,5)
-    postboxModel.rotateY(Math.PI * .2)
+    postboxModel.position.set(8,0,-2)
+    postboxModel.rotateY(Math.PI * .8)
     postboxModel.scale.set (0.1, 0.1, 0.1)
 
        scene.add(postboxModel)
     
 
     const postboxHelper: BoxHelper = new BoxHelper(postboxModel, 'orange')
-    // postboxHelper.position.set(11,0,-5)
-    // postboxHelper.rotateY(Math.PI * .8)
-    
-    // scene.add(postboxHelper)
+    postboxHelper.name = 'postboxHelper'
+    postboxHelper.layers.set(1)
+
+    scene.add(postboxHelper)
+
+    const postboxSelectedBox: BoxHelper = new BoxHelper(postboxModel, 'orange')
+    postboxSelectedBox.name = 'postboxSelectedBox'
+    postboxSelectedBox.layers.set(0)
+    postboxSelectedBox.visible = false
+
+    scene.add(postboxSelectedBox)
 
 })
 
@@ -258,25 +267,34 @@ gltfloader.load('models/mfp_office_printer.glb', function (printer) {
     let printerModel = printer.scene
 
     printerModel.name = 'printer'
-    printerModel.position.set(4,1,-2)
+    printerModel.position.set(2,1,-5)
     printerModel.rotateY(-Math.PI * .2)
     printerModel.scale.set (0.03, 0.03, 0.03)
 
     if (brightness === 255) {
         scene.add(printerModel)
     }
-    // scene.add(postboxBoundingBox)
 
     const printerHelper: BoxHelper = new BoxHelper(printerModel, 'blue')
-    
-    // scene.add(printerHelper)
+    printerHelper.name = 'printerHelper'
+    printerHelper.layers.set(1)
+    scene.add(printerHelper)
+
+    const printerSelectedBox: BoxHelper = new BoxHelper(printerModel, 'blue')
+    printerSelectedBox.name = 'printerSelectedBox'
+    printerSelectedBox.layers.set(0)
+    printerSelectedBox.visible = false
+
+    scene.add(printerSelectedBox)
 
 })
 
 
 
 let cameraControls: OrbitControls = new OrbitControls(camera, canvas)
-cameraControls.target = new Vector3(0, 12, 0)
+cameraControls.target = new Vector3(-10, 12, 0)
+cameraControls.autoRotate = true
+cameraControls.autoRotateSpeed = .4
 
 if (brightness === 0) {
     cameraControls.target = new Vector3(0, 3, 0)
@@ -341,11 +359,38 @@ function onPointerMove( event ) {
 
 window.addEventListener( 'pointermove', onPointerMove );
 
-let chemnitzOSM = new ChemnitzOSM()
+function onSelectedClick ( event ) {
 
- scene.add(chemnitzOSM.mesh)
+    if (postboxSelected === true) {
+
+        const email = 'post@der-chemnitz.de'; // Change this to your recipient email address
+        const subject = 'Sie haben Post'; // Change this to your email subject
+        const body = 'Achtung, diese Mail wird (wenn ich das implementiert habe) live auf Der-Chemnitz.de vorgelesen!!! (Maximal 200 Wörter)'; // Change this to your email body
+        const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
+
+    }
+
+}
+
+window.addEventListener( 'click', onSelectedClick );
+
+
+let chemnitzOSM = new ChemnitzOSM()
+scene.add(chemnitzOSM.mesh)
+
+//let chemnitzFluesseOSM = new ChemnitzFluesseOSM()
+// chemnitzFluesseOSM.mesh.position.y = chemnitzFluesseOSM.mesh.position.y - 1 
+// chemnitzFluesseOSM.mesh.position.x = chemnitzFluesseOSM.mesh.position.x - 6 
+
+//scene.add(chemnitzFluesseOSM.mesh)
 
 let delta: number = 0
+
+let animationSynced = false
+let postboxSelected = false
+let printerSelected = false
+
 
 renderer.setAnimationLoop(function () {
 
@@ -360,6 +405,12 @@ renderer.setAnimationLoop(function () {
     }
 
     renderer.render( scene, camera );
+
+    if (loadingFemaleDone && loadingMaleDone && animationSynced === false) {
+        maleAction.play()
+        femaleAction.play()
+        animationSynced = true
+    }
 
     pointLight.position.set(0, (Math.sin(ticks / 1000) * 5) + 15, 10)
 
@@ -439,8 +490,7 @@ renderer.setAnimationLoop(function () {
         children[1].material.transparent = true
         children[0].material.opacity = Math.sin(ticks / 2000) + .5
         children[1].material.opacity = Math.sin(ticks / 2000) + .3
-        children[0].material.needsUpdate = true
-        children[1].material.needsUpdate = true
+
 
         if (Math.sin(ticks / 2000) < 0) {
             female.visible = false
@@ -448,6 +498,16 @@ renderer.setAnimationLoop(function () {
         else {
             female.visible = true
         }
+        /*
+        if (Math.sin(ticks / 2000) < 0.2) {
+            children[0].material.wireframe = true
+        }
+        else {
+            children[0].material.wireframe = false
+        }
+        */
+        children[0].material.needsUpdate = true
+        children[1].material.needsUpdate = true
         
         // console.log (children)
 
@@ -463,8 +523,7 @@ renderer.setAnimationLoop(function () {
         children[1].material.transparent = true
         children[0].material.opacity = Math.sin(ticks / -2000) + .5
         children[1].material.opacity = Math.sin(ticks / -2000) + .3
-        children[0].material.needsUpdate = true
-        children[1].material.needsUpdate = true
+
 
         if (Math.sin(ticks / -2000) < 0) {
             male.visible = false
@@ -472,6 +531,16 @@ renderer.setAnimationLoop(function () {
         else {
             male.visible = true
         }
+        /*
+        if (Math.sin(ticks / -2000) < 0.2) {
+            children[0].material.wireframe = true
+        }
+        else {
+            children[0].material.wireframe = false
+        }
+        */
+        children[0].material.needsUpdate = true
+        children[1].material.needsUpdate = true
 
 
     }
@@ -491,6 +560,84 @@ renderer.setAnimationLoop(function () {
 
     }
     */
+
+    // update the picking ray with the camera and pointer position
+	raycaster.setFromCamera( pointer, camera );
+
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects( scene.children );
+
+    if (intersects.length != 0) {
+        
+        for ( let i = 0; i < intersects.length; i ++ ) {
+
+            if (intersects[i].object.name === 'postboxHelper') {
+
+                postboxSelected = true
+
+                let postboxSelectedBox = scene.getObjectByName('postboxSelectedBox') ?? {}
+
+                if (postboxSelectedBox.hasOwnProperty('visible')) {
+
+                    postboxSelectedBox.visible = true
+
+                }
+
+
+            }
+
+            if (intersects[i].object.name === 'printerHelper') {
+
+                printerSelected = true
+
+                let printerSelectedBox = scene.getObjectByName('printerSelectedBox') ?? {}
+
+                if (printerSelectedBox.hasOwnProperty('visible')) {
+
+                    printerSelectedBox.visible = true
+
+                }
+
+            }
+
+
+
+        }
+
+    }
+
+    else {
+
+        if (postboxSelected === true) {
+            
+            let postboxSelectedBox = scene.getObjectByName('postboxSelectedBox') ?? {}
+
+            if (postboxSelectedBox.hasOwnProperty('visible')) {
+
+                postboxSelectedBox.visible = false
+            }
+            
+            postboxSelected = false
+
+        }
+
+        if (printerSelected === true) {
+            
+
+            let printerSelectedBox = scene.getObjectByName('printerSelectedBox') ?? {}
+
+            if (printerSelectedBox.hasOwnProperty('visible')) {
+
+                printerSelectedBox.visible = false
+
+            }
+
+            printerSelected = false
+
+        }
+
+
+    }
 
     //console.log(ticks)
 

@@ -69,7 +69,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
   kreiseParagraph.style.margin = '0'
 
   const ccParagraph = document.createElement('p');
-  ccParagraph.innerHTML = '<a href="cccredits.html"><img src="ccheart.svg" width="50" height="auto"></a>'
+  ccParagraph.innerHTML = '<a href="cccredits.html"><img id="ccLogo" src="ccheart.svg" width="50" height="auto"></a>'
   ccParagraph.style.paddingBottom = '2em'
 
 
