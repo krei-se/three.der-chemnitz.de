@@ -6,6 +6,8 @@ export function getPageOverlayDiv (): HTMLDivElement {
   const pageOverlayDiv: HTMLDivElement = document.createElement('div')
   pageOverlayDiv.setAttribute('id', 'pageOverlay')
 
+  pageOverlayDiv.classList.add('applyInvertFilter')
+
   const introDiv: HTMLDivElement = document.createElement('div')
   introDiv.setAttribute('id', 'introDiv')
   
@@ -31,7 +33,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
   titleParagraph.innerHTML = 'Der-Chemnitz.de<br>'
 
   const disclaimerParagraph = document.createElement('p');
-  disclaimerParagraph.innerHTML = 'Dies ist derzeit keine offizielle Seite der Stadt Chemnitz'
+  disclaimerParagraph.innerHTML = 'Dies ist keine offizielle Seite der Stadt Chemnitz'
 
   const explainParagraph = document.createElement('p');
   explainParagraph.innerHTML = 'Der-Chemnitz.de ist ein 5D-Kunstprojekt zur Sichtbarmachung des "Der Chemnitz"'
@@ -75,16 +77,16 @@ export function getPageOverlayDiv (): HTMLDivElement {
 
 
 
+  pageOverlayDiv.append(explainParagraph)
   pageOverlayDiv.append(introDiv)
   //pageOverlayDiv.append(titleParagraph)
   pageOverlayDiv.append(disclaimerParagraph)
-  pageOverlayDiv.append(explainParagraph)
   pageOverlayDiv.append(detailsParagraph)
-  pageOverlayDiv.append(authorParagraph)
-  pageOverlayDiv.append(kreiseLink)
-  pageOverlayDiv.append(kreiseParagraph)
+  // pageOverlayDiv.append(authorParagraph)
+  // pageOverlayDiv.append(kreiseLink)
+  // pageOverlayDiv.append(kreiseParagraph)
 
-  pageOverlayDiv.append(ccParagraph)
+  // pageOverlayDiv.append(ccParagraph)
 
   
   /*
@@ -109,14 +111,136 @@ export function getPageOverlayDiv (): HTMLDivElement {
 }
 
 
+export function getMailOverlayDiv (): HTMLDivElement {
+
+  let mailinfoDiv = document.createElement('div')
+  mailinfoDiv.innerHTML = "post@der-chemnitz.de"
+
+  mailinfoDiv.style.zIndex = '100'
+  mailinfoDiv.style.fontSize = '12'
+  mailinfoDiv.style.position = 'fixed'
+  mailinfoDiv.style.visibility = 'hidden'
+  mailinfoDiv.style.transform = 'translate(-50%,-20px);'
+  
+  return mailinfoDiv
+
+}
+
+export function getKreiseOverlayDiv (): HTMLDivElement {
+
+  let kreiseDiv = document.createElement('div')
+  kreiseDiv.style.alignItems = 'top'
+
+  const kreiseDesc1 = document.createElement('p')
+  kreiseDesc1.innerHTML = "Running on "
+  kreiseDesc1.style.cssText = "display: inline; white-space: nowrap;"
+
+  const kreiseLink: HTMLAnchorElement = document.createElement('a')
+  kreiseLink.setAttribute('href', 'https://krei.se')
+  kreiseLink.style.margin = '0'
+  kreiseLink.style.whiteSpace = 'nowrap'
+
+  const kreiseDesc2 = document.createElement('p')
+  kreiseDesc2.innerHTML = "'n Gin"
+  kreiseDesc2.style.cssText = "display: inline; white-space: nowrap;"
+
+
+  const kreiseImg: HTMLImageElement = document.createElement('img')
+  kreiseImg.setAttribute('src', kreiseLogo)
+  kreiseImg.setAttribute('width', 150)
+  kreiseImg.setAttribute('height', 'auto')
+  kreiseImg.setAttribute('id', 'kreiseLogo')
+  
+  kreiseImg.classList.add('kreiseLogo')
+  kreiseImg.classList.add('vanilla')
+  
+  kreiseImg.setAttribute('alt', 'Krei.se Logo')
+
+  kreiseImg.style.whiteSpace = 'nowrap'
+
+
+  kreiseLink.append(kreiseImg)
+
+  kreiseDiv.append(kreiseDesc1)
+  kreiseDiv.append(kreiseLink)
+  kreiseDiv.append(kreiseDesc2)
+
+  kreiseDiv.style.cssText = 'display: flex; align-items: top; z-index: 5; font-size: 8pt; position: fixed; bottom: 2em; left: 50%; transform: translate(-50%, 0);'
+
+  return kreiseDiv
+
+}
+
+export function getCCOverlayDiv (): HTMLDivElement {
+
+  let ccDiv = document.createElement('div')
+
+  const ccParagraph = document.createElement('p');
+  ccParagraph.innerHTML = '<a href="cccredits.html"><img id="ccLogo" src="ccheart.svg" width="50" height="auto"></a>'
+  ccParagraph.style.paddingBottom = '2em'
+
+  ccDiv.append(ccParagraph)
+  ccDiv.style.cssText = 'z-index: 5; font-size: 8pt; position: fixed; bottom: 2em; right: 5em;'
+
+  return ccDiv
+
+}
+
+export function getDCOverlayDiv (): HTMLDivElement {
+
+  let dcDiv = document.createElement('div')
+
+  const dcParagraph = document.createElement('p');
+  dcParagraph.innerHTML = 'Der-Chemnitz.de Version 0.0.6 )Nosejob('
+  
+  dcDiv.append(dcParagraph)
+  dcDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; left: 1em;'
+
+  return dcDiv
+
+}
+
+
 export function getOSMOverlayDiv (): HTMLDivElement {
 
   let osmDiv = document.createElement('div')
 
   osmDiv.innerHTML = 'Karte hergestellt aus <a href="https://www.openstreetmap.org">OpenStreetMap-Daten</a> | Lizenz: <a href="https://opendatacommons.org/licenses/odbl/">Open Database License (ODbL)</a>'
-  osmDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; right: 0;'
+  osmDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; right: 1em;'
 
   return osmDiv
+
+}
+
+export function getGenesisDiv (): HTMLDivElement {
+
+  let genesisDiv = document.createElement('div')
+  genesisDiv.id = 'genesisDiv'
+
+  let genesisHeader = document.createElement('h2')
+  genesisHeader.innerHTML = 'Genesis (im Aufbau)'
+  let genesisChapterOne = document.createElement('p')
+  genesisChapterOne.innerHTML = 'Kapitel 1: Grundform'
+
+  
+  let genesisCirclesList = document.createElement('ul')
+  let genesisCircles = ['Einzeller', 'Mehrzeller', 'Wirbellose', 'Wirbeltier', 'Primat', 'Frühmensch', 'homo sapiens', 'Cyborg', 'Höheres Wesen', 'Gottheit', 'Singularität', 'Schöpfer']
+
+  genesisCircles.forEach((circleName: string, index: number) => {
+    
+    let genesisCirclesItem = document.createElement('li')
+    genesisCirclesItem.innerHTML = index+1 + ": " + circleName
+    genesisCirclesList.append(genesisCirclesItem)
+
+  });
+
+  genesisDiv.append(genesisHeader)
+ // genesisDiv.append(genesisChapterOne)
+ // genesisDiv.append(genesisCirclesList)
+
+  genesisDiv.style.cssText = 'font-size: 12pt; position: fixed; bottom: 50%; right: 3em;'
+
+  return genesisDiv
 
 }
 

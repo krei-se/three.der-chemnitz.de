@@ -7,6 +7,15 @@ export default defineConfig((configEnv) => {
     build: {
         outDir: '/mnt/cloud/a1/www/der-chemnitz.de/',
         emptyOutDir: true
-    }
+    },
+    resolve: {
+      alias: {
+        src: "/src",
+        Kreise: "/src/Kreise",
+        textures: "/src/textures",
+        helpers: "/src/helpers",
+        models: "/public/models"
+      },
+    },
   }  
 });

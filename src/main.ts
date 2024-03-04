@@ -1,110 +1,100 @@
-import SunCalc from 'suncalc'
-import type { GetSunPositionResult, GetTimesResult } from 'suncalc'
-
-import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper, AxesHelper } from 'three'
 import './style.css'
-import { resizeRendererToDisplaySize } from './helpers/responsiveness'
+
+import {
+    Clock,
+    Scene
+  } from 'three'
+  
+// GLOBALS
+import Kreise from './Kreise/Kreise.ts'
+
 import { FBXLoader, GLTFLoader, OrbitControls } from 'three/examples/jsm/Addons.js'
-import { getPageOverlayDiv, getOSMOverlayDiv } from './htmlincludes'
+
+import { resizeRendererToDisplaySize } from './helpers/responsiveness'
+
+// @ts-expect-errors module without declarations
 import Stats from 'three/examples/jsm/libs/stats.module'
 
-const appDiv: HTMLDivElement = document.querySelector('#app') ?? document.createElement('div')
+import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper, AxesHelper, ArrowHelper, Quaternion, MeshPhysicalMaterial } from 'three'
 
-const canvas: HTMLCanvasElement = document.createElement('canvas')
-canvas.id = 'scene'
+import { getPageOverlayDiv, getOSMOverlayDiv, getGenesisDiv, getCCOverlayDiv, getKreiseOverlayDiv, getMailOverlayDiv, getDCOverlayDiv } from './htmlincludes'
+
+
+import ChemnitzOSM from './ChemnitzOSM'
+import StoneForest from './StoneForest'
+import Dirigierstab from './Dirigierstab'
+
+const kreise = new Kreise()
+
+kreise.camera.fov = 90
+kreise.scene.remove(kreise.objects.pointLight)
+
+const removeMeDiv: HTMLDivElement = document.querySelector('#removeMe') ?? document.createElement('div')
+document.body.removeChild(removeMeDiv)
 
 document.body.append(getPageOverlayDiv())
 document.body.append(getOSMOverlayDiv())
+document.body.append(getCCOverlayDiv())
+document.body.append(getDCOverlayDiv())
+document.body.append(getKreiseOverlayDiv())
 
-appDiv.append(canvas)
+let mailinfoDiv = getMailOverlayDiv()
 
+document.body.append(mailinfoDiv)
 
-let suncalc = SunCalc.getTimes(new Date(), 50.84852106503032, 12.923759828615541)
-let sunPosition = SunCalc.getPosition(new Date(), 50.84852106503032, 12.923759828615541)
-    
-let brightness = 255
+// end of HTML
 
-if (sunPosition.altitude < -0.1) {
-    brightness = 0
+let mode = 'orbit'
+
+kreise.camera.position.set(3, 2, 3)
+
+if (kreise.brightness === 0) {
+    kreise.camera.position.set(3, 2, 3)
+    kreise.camera.lookAt(0, -2, 0)
 }
-      
-if (sunPosition.altitude > 0.1) {
-    brightness = 255
-}
-
-// brightness = 0
-
-if (brightness === 0) {
-
-    document.body.style.color = 'white'
-    document.getElementById('kreiseLogo').style.cssText = 'filter: invert(1);'
-    document.getElementById('derchemnitzLogo').style.cssText = 'filter: invert(1);'
-    document.getElementById('ccLogo').style.cssText = 'filter: invert(1);'
-    
-
-}
-
-const renderer = new WebGLRenderer({
-canvas: canvas,
-antialias: true,
-alpha: false, // we don't need this true, its just for the background
-logarithmicDepthBuffer: true,
-})
-
-renderer.setPixelRatio(window.devicePixelRatio)
-renderer.shadowMap.enabled = true
-renderer.shadowMap.type = PCFSoftShadowMap
-
-const renderTarget = new WebGLRenderTarget(canvas.clientWidth, canvas.clientHeight)
-renderTarget.samples = 2
-//this.renderer.outputColorSpace = SRGBColorSpace
-//this.renderer.toneMapping = ACESFilmicToneMapping
-
-// this needs to be set up before the composer
-
-const camera = new PerspectiveCamera(
-    90,                                                        // FOV
-    canvas.clientWidth / canvas.clientHeight,         // Aspect, updated on resize
-    0.1,                                                        // Near
-    5000                                              // Far) // will be overwritten in main
-)
-camera.position.set(0, 15, 15)
-camera.lookAt(0, 12, 0)
-
-if (brightness === 0) {
-    camera.position.set(0, 8, 25)
-    camera.lookAt(0, 3, 0)
-}
-
-
-const scene = new Scene();
-scene.background = new Color('white')
-
-import citymapTextureFile from './textures/chemnitzOSM.png'
-import ChemnitzOSM from './ChemnitzOSM'
-const citymapTexture = new TextureLoader().load(citymapTextureFile)
-
-const mesh = new Mesh( new CircleGeometry( 150, 50 ), new MeshPhongMaterial({ color: 'lightgrey' }) );
-mesh.rotation.x = - Math.PI / 2;
-mesh.position.y = -0.3
-mesh.receiveShadow = false;
-//mesh.material.map = citymapTexture
-mesh.visible = false
-scene.add( mesh )
 
 let topColor: number = 0xfcad83
 let bottomColor: number = 0xfcd3f4
 
-if (brightness === 0) {
+if (kreise.brightness === 0) {
     topColor = 0x443399
     bottomColor = 0x442222
 }
 
+
+const vertexShader: string = ` 
+
+varying vec3 vWorldPosition;
+
+void main() {
+
+    vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+    vWorldPosition = worldPosition.xyz;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+}
+`;
+
+const fragmentShader: string = `
+uniform vec3 topColor;
+uniform vec3 bottomColor;
+uniform float offset;
+uniform float exponent;
+
+varying vec3 vWorldPosition;
+
+void main() {
+
+    float h = normalize( vWorldPosition + offset ).y;
+    gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
+
+}
+`;
+
 const hemiLight = new HemisphereLight( topColor, bottomColor, 1 );
 hemiLight.position.set( 0, 60, 0 );
 
-const vertexShader = document.getElementById( 'vertexShader' ).textContent;
-const fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
 const uniforms = {
     'topColor': { value: new Color( topColor ) },
     'bottomColor': { value: new Color( bottomColor ) },
@@ -115,10 +105,10 @@ uniforms[ 'topColor' ].value.copy( hemiLight.color );
 uniforms[ 'bottomColor' ].value.copy( hemiLight.groundColor );
 
 
-scene.background = new Color().setHSL( 0.6, 0, 1 );
-scene.fog = new Fog( scene.background, 1, 5000 );
+kreise.scene.background = new Color().setHSL( 0.6, 0, 1 );
+kreise.scene.fog = new Fog( scene.background, 1, 5000 );
 
-scene.fog.color.copy( uniforms[ 'bottomColor' ].value );
+kreise.scene.fog.color.copy( uniforms[ 'bottomColor' ].value );
 
 const skyGeo = new SphereGeometry( 4000, 32, 15 );
 const skyMat = new ShaderMaterial( {
@@ -129,22 +119,22 @@ const skyMat = new ShaderMaterial( {
 } );
 
 const sky = new Mesh( skyGeo, skyMat );
-scene.add( sky );
+kreise.scene.add( sky );
 
 
-const ambientLight = new AmbientLight(new Color('white'), 1)
+// const ambientLight = new AmbientLight(new Color('white'), 1)
 const pointLight = new PointLight(new Color('white'), 40, 50, 1)
 
 
-if (brightness === 0) {
+if (kreise.brightness === 0) {
     pointLight.intensity = 10
 }
 
-pointLight.position.set(0, 10, 0)
+pointLight.position.set(2, 2, 0)
 
-scene.add(hemiLight)
-scene.add(ambientLight)
-scene.add(pointLight)
+kreise.scene.add(hemiLight)
+// kreise.scene.add(ambientLight)
+kreise.scene.add(pointLight)
 
 const loader = new FBXLoader();
 //const path = require('models/idle_female.fbx')
@@ -161,14 +151,14 @@ let femaleAction: any
 let femaleWaveAction: any
 
 let modelFileNamePrefix: string = 'Idle_'
-if (brightness == 0) {
+if (kreise.brightness == 0) {
     modelFileNamePrefix = 'Sleeping_'
 }
 
 loader.load( 'models/' + modelFileNamePrefix + 'female.fbx', function ( female ) {
 
     female.name = "female"
-    female.scale.set(0.09, 0.09, 0.09)
+    female.scale.set(0.01, 0.01, 0.01)
     female.position.set(0,0,0)
     female.rotateY(-Math.PI/3)
 
@@ -181,10 +171,16 @@ loader.load( 'models/' + modelFileNamePrefix + 'female.fbx', function ( female )
     loadingFemaleDone = true
 
     // femaleAction.play()
-    scene.add(female);
+    kreise.scene.add(female);
 
-    console.log(female)
+    // console.log(female)
 
+    let children = []
+
+    children[0] = female.getObjectByName('Beta_Surface')
+    children[1] = female.getObjectByName('Beta_Joints')
+    children[0].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
+    children[1].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
 
 
     loader.load( 'models/waving.fbx', function ( wavingObject ) {
@@ -205,7 +201,7 @@ let maleWaveAction: any
 loader.load( 'models/' + modelFileNamePrefix + 'male.fbx', function ( male ) {
 
     male.name = "male"
-    male.scale.set(0.09, 0.09, 0.09)
+    male.scale.set(0.01, 0.01, 0.01)
     male.position.set(0,0,0)
     male.rotateY(-Math.PI/3)
 
@@ -213,14 +209,22 @@ loader.load( 'models/' + modelFileNamePrefix + 'male.fbx', function ( male ) {
     maleAction = maleMixer.clipAction(male.animations[0])
     if (modelFileNamePrefix == 'Sleeping_') maleAction = maleMixer.clipAction(male.animations[1])
     
-    console.log(male)
+    // console.log(male)
 
     animationActions.push(maleAction)
 
     loadingMaleDone = true
 
     // 
-    scene.add( male );
+    kreise.scene.add( male );
+
+    let children = []
+
+    children[0] = male.getObjectByName('Alpha_Surface')
+    children[1] = male.getObjectByName('Alpha_Joints')
+    children[0].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
+    children[1].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
+
 
 
     loader.load( 'models/waving.fbx', function ( wavingObject ) {
@@ -240,25 +244,25 @@ gltfloader.load('models/german_post_box.glb', function (postbox) {
     let postboxModel = postbox.scene
 
     postboxModel.name = 'postbox'
-    postboxModel.position.set(8,0,-2)
+    postboxModel.position.set(1,0,-.05)
     postboxModel.rotateY(Math.PI * .8)
-    postboxModel.scale.set (0.1, 0.1, 0.1)
+    postboxModel.scale.set (0.01, 0.01, 0.01)
 
-       scene.add(postboxModel)
+    kreise.scene.add(postboxModel)
     
 
     const postboxHelper: BoxHelper = new BoxHelper(postboxModel, 'orange')
     postboxHelper.name = 'postboxHelper'
     postboxHelper.layers.set(1)
 
-    scene.add(postboxHelper)
+    kreise.scene.add(postboxHelper)
 
     const postboxSelectedBox: BoxHelper = new BoxHelper(postboxModel, 'orange')
     postboxSelectedBox.name = 'postboxSelectedBox'
     postboxSelectedBox.layers.set(0)
     postboxSelectedBox.visible = false
 
-    scene.add(postboxSelectedBox)
+    kreise.scene.add(postboxSelectedBox)
 
 })
 
@@ -267,37 +271,37 @@ gltfloader.load('models/mfp_office_printer.glb', function (printer) {
     let printerModel = printer.scene
 
     printerModel.name = 'printer'
-    printerModel.position.set(2,1,-5)
+    printerModel.position.set(1,0.2,-0.8)
     printerModel.rotateY(-Math.PI * .2)
-    printerModel.scale.set (0.03, 0.03, 0.03)
+    printerModel.scale.set (0.005, 0.005, 0.005)
 
-    if (brightness === 255) {
-        scene.add(printerModel)
+    if (kreise.brightness === 255) {
+        kreise.scene.add(printerModel)
     }
 
     const printerHelper: BoxHelper = new BoxHelper(printerModel, 'blue')
     printerHelper.name = 'printerHelper'
     printerHelper.layers.set(1)
-    scene.add(printerHelper)
+    kreise.scene.add(printerHelper)
 
     const printerSelectedBox: BoxHelper = new BoxHelper(printerModel, 'blue')
     printerSelectedBox.name = 'printerSelectedBox'
     printerSelectedBox.layers.set(0)
     printerSelectedBox.visible = false
 
-    scene.add(printerSelectedBox)
+    kreise.scene.add(printerSelectedBox)
 
 })
 
 
 
-let cameraControls: OrbitControls = new OrbitControls(camera, canvas)
-cameraControls.target = new Vector3(-10, 12, 0)
-cameraControls.autoRotate = true
+let cameraControls: OrbitControls = new OrbitControls(kreise.camera, kreise.canvas)
+cameraControls.target = new Vector3(0, 1, 0)
+cameraControls.autoRotate = false
 cameraControls.autoRotateSpeed = .4
 
-if (brightness === 0) {
-    cameraControls.target = new Vector3(0, 3, 0)
+if (kreise.brightness === 0) {
+    cameraControls.target = new Vector3(0, 0, 0)
 }
 
 const clock = new Clock()
@@ -331,29 +335,54 @@ let shininess = 400
 
 let lastColorChangeTick = 0
 
+
+/*
 if (import.meta.env.DEV) {
 
     const gridHelperInstance: GridHelper = new GridHelper(40, 40, 'orange', 'darkblue')
     gridHelperInstance.position.y = -0.02
     gridHelperInstance.visible = true
-    scene.add(gridHelperInstance)
+    kreise.scene.add(gridHelperInstance)
 
     const axesHelperInstance: AxesHelper = new AxesHelper(5)
-    scene.add(axesHelperInstance)
+    kreise.scene.add(axesHelperInstance)
 
 }
+*/
 
 const raycaster: Raycaster = new Raycaster();
 raycaster.layers.set (1)
-const pointer = new Vector2();
+const pointer = new Vector2(0.5,-0.8);
+const pointerPx = new Vector2(0,0);
+
+
+let dirigierstab = new Dirigierstab().mesh
+dirigierstab.position.set (-1,0,0)
+
+kreise.scene.add(dirigierstab)
+
+// arrowHelper.setDirection(raycaster.ray.direction)
+// arrowHelper.position.set(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z)
+// let arrowHelper = new ArrowHelper( raycaster.ray.direction, raycaster.ray.origin, 100, Math.random() * 0xffffff )
+// scene.add(arrowHelper)
+
+let idleTicks: number = 0
 
 function onPointerMove( event ) {
 
 	// calculate pointer position in normalized device coordinates
 	// (-1 to +1) for both components
 
-	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	pointer.x = ( event.offsetX / window.innerWidth ) * 2 - 1; // from -1 to 1
+	pointer.y = - ( event.offsetY / window.innerHeight ) * 2 + 1; // from -1 to 1
+
+    pointerPx.x = event.offsetX
+    pointerPx.y = event.offsetX
+
+    // console.log(pointer)
+
+    idleTicks = 0
+
 
 }
 
@@ -364,10 +393,44 @@ function onSelectedClick ( event ) {
     if (postboxSelected === true) {
 
         const email = 'post@der-chemnitz.de'; // Change this to your recipient email address
-        const subject = 'Sie haben Post'; // Change this to your email subject
-        const body = 'Achtung, diese Mail wird (wenn ich das implementiert habe) live auf Der-Chemnitz.de vorgelesen!!! (Maximal 200 Wörter)'; // Change this to your email body
+        const subject = 'Warum gehst Du nicht zu Onkel Werner?'; // Change this to your email subject
+        const body = ''; // Change this to your email body
         const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = mailtoUrl;
+        // window.location.href = mailtoUrl;
+
+    }
+
+    if (printerSelected === true && mode === 'orbit') {
+
+        mode = 'genesis'
+        kreise.camera.position.set(-2, 1.5, -.8)
+        cameraControls.target.set(0,0.5,0)
+        cameraControls.autoRotate = false
+
+        maleAction.stop()
+        femaleAction.stop()
+
+        document.body.append(getGenesisDiv())
+
+        return
+
+    }
+
+    if (printerSelected === true && mode === 'genesis') {
+
+        mode = 'orbit'
+        kreise.camera.position.set(2, 1, 2)
+        cameraControls.target = new Vector3(0, 1, 0)
+        cameraControls.autoRotate = true
+
+
+        maleAction.play()
+        femaleAction.play()
+
+        let genesisDiv = document.querySelector('#genesisDiv') ?? document.createElement('div')
+        document.body.removeChild(genesisDiv)
+    
+        return
 
     }
 
@@ -377,7 +440,16 @@ window.addEventListener( 'click', onSelectedClick );
 
 
 let chemnitzOSM = new ChemnitzOSM()
-scene.add(chemnitzOSM.mesh)
+kreise.scene.add(chemnitzOSM.mesh)
+
+// let boundingSphereCityMap = chemnitzOSM.mesh.geometry.computeBoundingSphere()
+
+/*
+let stoneForest = new StoneForest()
+let stoneForestCurveMesh = stoneForest.curveMesh
+
+scene.add(stoneForestCurveMesh)
+*/
 
 //let chemnitzFluesseOSM = new ChemnitzFluesseOSM()
 // chemnitzFluesseOSM.mesh.position.y = chemnitzFluesseOSM.mesh.position.y - 1 
@@ -392,19 +464,36 @@ let postboxSelected = false
 let printerSelected = false
 
 
-renderer.setAnimationLoop(function () {
+kreise.updateBrightness()
+
+
+kreise.renderer.setAnimationLoop(function () {
 
     delta = clock.getDelta()
 
     ticks += (delta * 1000)
+    idleTicks += (delta * 1000)
 
     cameraControls.update(delta)
 
-    if (import.meta.env.DEV) {
-        stats.update()
+    if (idleTicks > 5000) {
+
+        cameraControls.autoRotate = true
+
     }
 
-    renderer.render( scene, camera );
+    else {
+
+        cameraControls.autoRotate = false
+
+    }
+    
+    if (kreise.client.developerMode) {
+        stats.update()
+        // add debug interfaces
+      }
+
+    kreise.composer.render();
 
     if (loadingFemaleDone && loadingMaleDone && animationSynced === false) {
         maleAction.play()
@@ -412,7 +501,7 @@ renderer.setAnimationLoop(function () {
         animationSynced = true
     }
 
-    pointLight.position.set(0, (Math.sin(ticks / 1000) * 5) + 15, 10)
+    pointLight.position.set(2, (Math.sin(ticks / 1000) * 5) + 2, 2)
 
     if (ticks > (lastColorChangeTick + 200)) {
 
@@ -421,7 +510,10 @@ renderer.setAnimationLoop(function () {
         shininess = shininess + (Math.floor(Math.random() * 20))
         if (turboColorIndex > 255) turboColorIndex = turboColorIndex - 255
         if (turboColorBodyIndex > 255) turboColorBodyIndex = turboColorBodyIndex - 255
-        if (shininess > 800) shininess = 100
+        if (shininess > 1000) shininess = 50
+
+
+        console.log(shininess)
 
         jointColor.r = turbo_colormap_data[turboColorIndex][0] - .2
         jointColor.g = turbo_colormap_data[turboColorIndex][1] - .1
@@ -433,18 +525,17 @@ renderer.setAnimationLoop(function () {
         
         if (loadingFemaleDone) {
 
-            let female = scene.getObjectByName('female')
+            let female = kreise.scene.getObjectByName('female')
 
-            // console.log(female)
-            
             let children = []
 
             children[0] = female.getObjectByName('Beta_Surface')
             children[1] = female.getObjectByName('Beta_Joints')
-            // console.log(children)
             children[0].material.color = bodyColor
             children[1].material.color = jointColor
-            children[0].shininess = shininess
+            children[0].material.roughness = Math.sin(ticks / 5000)
+            children[1].material.roughness = Math.sin(ticks / 5000)
+            
             children[0].material.needsUpdate = true
             children[1].material.needsUpdate = true
 
@@ -452,18 +543,17 @@ renderer.setAnimationLoop(function () {
 
         if (loadingMaleDone) {
 
-            let male = scene.getObjectByName('male')
+            let male = kreise.scene.getObjectByName('male')
 
-            // console.log(female)
-            
             let children = []
 
             children[0] = male.getObjectByName('Alpha_Surface')
             children[1] = male.getObjectByName('Alpha_Joints')
-            // console.log(children)
             children[0].material.color = bodyColor
             children[1].material.color = jointColor
-            children[0].shininess = shininess
+            children[0].material.roughness = Math.sin(ticks / 5000)
+            children[1].material.roughness = Math.sin(ticks / 5000)
+
             children[0].material.needsUpdate = true
             children[1].material.needsUpdate = true
 
@@ -477,9 +567,7 @@ renderer.setAnimationLoop(function () {
 
     if (loadingFemaleDone) {
         femaleMixer.update(delta)
-        let female = scene.getObjectByName('female')
-
-        // console.log(female)
+        let female = kreise.scene.getObjectByName('female')
         
         let children = []
 
@@ -488,6 +576,8 @@ renderer.setAnimationLoop(function () {
         // console.log(children)
         children[0].material.transparent = true
         children[1].material.transparent = true
+        children[1].shininess = shininess
+
         children[0].material.opacity = Math.sin(ticks / 2000) + .5
         children[1].material.opacity = Math.sin(ticks / 2000) + .3
 
@@ -514,13 +604,15 @@ renderer.setAnimationLoop(function () {
     }
     if (loadingMaleDone) {
         maleMixer.update(delta)
-        let male = scene.getObjectByName('male')
+        let male = kreise.scene.getObjectByName('male')
 
         let children = []
         children[0] = male.getObjectByName('Alpha_Surface')
         children[1] = male.getObjectByName('Alpha_Joints')
         children[0].material.transparent = true
         children[1].material.transparent = true
+        children[1].shininess = shininess
+
         children[0].material.opacity = Math.sin(ticks / -2000) + .5
         children[1].material.opacity = Math.sin(ticks / -2000) + .3
 
@@ -562,12 +654,31 @@ renderer.setAnimationLoop(function () {
     */
 
     // update the picking ray with the camera and pointer position
-	raycaster.setFromCamera( pointer, camera );
+	raycaster.setFromCamera( pointer, kreise.camera );
 
 	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects( scene.children );
+	const intersects = raycaster.intersectObjects( kreise.scene.children );
 
     if (intersects.length != 0) {
+
+        let postboxSelectedBox = kreise.scene.getObjectByName('postboxSelectedBox') ?? {}
+
+            if (postboxSelectedBox.hasOwnProperty('visible')) {
+
+                postboxSelectedBox.visible = false
+            }
+    
+        let printerSelectedBox = kreise.scene.getObjectByName('printerSelectedBox') ?? {}
+
+        if (printerSelectedBox.hasOwnProperty('visible')) {
+
+            printerSelectedBox.visibility = 'hidden'
+
+        }
+
+        postboxSelected = false
+        printerSelected = false
+        mailinfoDiv.style.visibility = 'hidden'
         
         for ( let i = 0; i < intersects.length; i ++ ) {
 
@@ -575,22 +686,24 @@ renderer.setAnimationLoop(function () {
 
                 postboxSelected = true
 
-                let postboxSelectedBox = scene.getObjectByName('postboxSelectedBox') ?? {}
-
                 if (postboxSelectedBox.hasOwnProperty('visible')) {
 
                     postboxSelectedBox.visible = true
 
+
                 }
 
+                document.body.removeChild(mailinfoDiv)
+                mailinfoDiv.style.top = (pointerPx.x).toString() + 'px'
+                mailinfoDiv.style.left = (pointerPx.y).toString() + 'px'
+                mailinfoDiv.style.visibility = 'visible'
+                document.body.append(mailinfoDiv)
 
             }
 
             if (intersects[i].object.name === 'printerHelper') {
 
                 printerSelected = true
-
-                let printerSelectedBox = scene.getObjectByName('printerSelectedBox') ?? {}
 
                 if (printerSelectedBox.hasOwnProperty('visible')) {
 
@@ -608,9 +721,11 @@ renderer.setAnimationLoop(function () {
 
     else {
 
+        mailinfoDiv.style.visibility = 'hidden'
+
         if (postboxSelected === true) {
             
-            let postboxSelectedBox = scene.getObjectByName('postboxSelectedBox') ?? {}
+            let postboxSelectedBox = kreise.scene.getObjectByName('postboxSelectedBox') ?? {}
 
             if (postboxSelectedBox.hasOwnProperty('visible')) {
 
@@ -624,7 +739,7 @@ renderer.setAnimationLoop(function () {
         if (printerSelected === true) {
             
 
-            let printerSelectedBox = scene.getObjectByName('printerSelectedBox') ?? {}
+            let printerSelectedBox = kreise.scene.getObjectByName('printerSelectedBox') ?? {}
 
             if (printerSelectedBox.hasOwnProperty('visible')) {
 
@@ -641,14 +756,48 @@ renderer.setAnimationLoop(function () {
 
     //console.log(ticks)
 
+    // console.log(camera.position)
+
     // scene.rotation.y = (Math.sin(ticks / 60000) * (Math.PI*2))
 
-    if (resizeRendererToDisplaySize(renderer)) {
 
-        camera.aspect = canvas.clientWidth / canvas.clientHeight
-        camera.updateProjectionMatrix()    
-        renderTarget.setSize(canvas.clientWidth, canvas.clientHeight)
+    dirigierstab.position.set(kreise.camera.position.x, kreise.camera.position.y, kreise.camera.position.z)
+    
+//    console.log(raycaster.ray.direction)
 
+    // look direction (NOT the raycast but camera target)
+    let lookDirection = new Vector3().subVectors(kreise.camera.position, cameraControls.target).normalize()
+
+
+    let ratio = window.innerWidth / window.innerHeight
+
+    var offset = new Vector3(pointer.x, pointer.y, 0); // Set z to 0 for 2D offset
+    offset.applyQuaternion(dirigierstab.quaternion);
+
+//    dirigierstab.position.add(offset.multiply(new Vector3(ratio, 1/ratio, 0.05)))
+    dirigierstab.position.add(offset.multiply(new Vector3(ratio,1,1)))
+
+    
+    // let stabDesiredDirection = new Vector3().subVectors(dirigierstab.position, cameraControls.target).normalize()
+    
+    dirigierstab.lookAt(cameraControls.target)
+
+  //  console.log(dirigierstab.rotation)
+
+
+   dirigierstab.position.subVectors(dirigierstab.position, lookDirection)
+
+
+
+   if (resizeRendererToDisplaySize(kreise.renderer)) {
+
+    kreise.updateCamera()
+
+    kreise.composer.setSize(kreise.canvas.clientWidth, kreise.canvas.clientHeight)
+
+    if (kreise.brightness === 0) {
+      //kreise.composer.passes[1] = new UnrealBloomPass(new Vector2(kreise.canvas.clientWidth / 2, kreise.canvas.clientHeight / 2), 0.3, 0.05, 0)
     }
+  }
 
 })

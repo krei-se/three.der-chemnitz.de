@@ -7,40 +7,47 @@
     <title>Der-Chemnitz.de</title>
   </head>
   <body>
-    <div id="app"></div>
-    
+		<div id="removeMe">
+      <img src="logo.svg" width="50px" height="auto"/>
+      <br><br>
+      <p>
+				<b>Der-Chemnitz.de</b></br>
+        Richard Wachler<br>
+        IT-Beratung<br>
+        Lohrstr. 42<br>
+        09113 Chemnitz<br><br>
+        (Dieser Server speichert keine Logs)
+      </p>
+    </div>
     <script type="module" src="/src/main.ts"></script>
-    <script type="x-shader/x-vertex" id="vertexShader">
 
-			varying vec3 vWorldPosition;
-
-			void main() {
-
-				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-				vWorldPosition = worldPosition.xyz;
-
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-			}
-
-		</script>
-
-		<script type="x-shader/x-fragment" id="fragmentShader">
-
-			uniform vec3 topColor;
-			uniform vec3 bottomColor;
-			uniform float offset;
-			uniform float exponent;
-
-			varying vec3 vWorldPosition;
-
-			void main() {
-
-				float h = normalize( vWorldPosition + offset ).y;
-				gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
-
-			}
-
-		</script>
+		<!-- noscript part -->
+		<style>
+      @font-face {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 300;
+        src: local(''),
+            url('/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+      }
+      body { 
+        min-width: 90vw; 
+        min-height: 90vh; 
+        text-align: center; 
+        padding: 1em; 
+        font-family: 'Montserrat'; 
+      }
+    </style>
+    <noscript>
+      <img src="logo.svg" width="100px" height="auto"/>
+      <p>
+        Richard Wachler<br>
+        IT-Beratung<br>
+        Lohrstr. 42<br>
+        09113 Chemnitz<br><br>
+        <a href="datenschutz.html">Datenschutz · Impressum</a>
+      </p>
+    </noscript>
+		<!-- noscript end -->
   </body>
 </html>

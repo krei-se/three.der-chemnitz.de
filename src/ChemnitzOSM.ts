@@ -1,8 +1,9 @@
-import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMaterial, CatmullRomCurve3, Color, ShaderMaterialParameters } from "three";
+import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMaterial, CatmullRomCurve3, Color, ShaderMaterialParameters, MeshBasicMaterial, LineBasicMaterial } from "three";
 
 import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline'
 
 import ChemnitzGeojson from './geojson/ChemnitzFluesseUndStrassen.json'
+import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
 //import ChemnitzGeojson from './geojson/ChemnitzHighways.json'
 
 interface overpassFeatures {
@@ -37,7 +38,9 @@ export default class ChemnitzOSM {
     maxLon: number = 0
 
     center: [number, number] = [12.919292512170788, 50.832438133484864]
-    size: number = 500
+    size: number = 500 // 1 degree is 111km. 1 degree is 111.000 meters. we use 1 WE = 500m.
+    scale: number = 222 // how many WU per degree?
+    radius: number = 0.08 // in degrees, so +/- 7 km = 14km now 10!!
 
     mesh = new Group()
     meshMirrored = new Group()
@@ -111,20 +114,24 @@ export default class ChemnitzOSM {
         
                         Object.values(feature.geometry.coordinates).forEach(coordinate => {
         
-                            let x = (coordinate[0] - offsetLat) * scale
-                            let y = (coordinate[1] - offsetLon) * scale
+                            let x = this.scale * (coordinate[0] - offsetLat) 
+                            let y = this.scale * (coordinate[1] - offsetLon) 
+
                             //let z = Math.sin((Math.sqrt(x**2 + y**2) / (this.size/2)) * (Math.PI/4)) * this.size
                             
                             let distanceToCenter = Math.sqrt((x**2) + (y**2))
 
-                            let radius = this.size * (1/2)
+                            //console.log(distanceToCenter, x,y)
 
-                            if (distanceToCenter < radius) {
+
+                            let wuradius = this.radius * this.scale
+
+                            if (distanceToCenter < wuradius) {
 
                                 // hypothenuse is radius
                                 // ankathete is distance
-                                let z = Math.sqrt((radius**2) - (distanceToCenter ** 2)) - radius - 1 // water a bit below
-                                let zMirrored = -(Math.sqrt((radius**2) - (distanceToCenter ** 2))) - radius + 1 // water a bit below
+                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.02 // water is 10m bit below
+                                let zMirrored = -(Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - wuradius + 0.02 // water a bit below
         
                                 curvePoints.push(new Vector3(x, y, z))
                                 curvePointsMirrored.push(new Vector3(x,y,zMirrored))
@@ -132,20 +139,24 @@ export default class ChemnitzOSM {
                             }
                         
                         })
-            
-                        let path: CatmullRomCurve3 = new CatmullRomCurve3(curvePoints)
-                        let pathMirrored: CatmullRomCurve3 = new CatmullRomCurve3(curvePointsMirrored)
-        
-                        //let lineGeometry = new BufferGeometry().setFromPoints(linePoints)
-                        // let tubeGeometry = new TubeGeometry(path, curvePoints.length, (width + lastWidth) * 0.0002, 8, false)
-                        let tubeGeometry = new TubeGeometry(path, curvePoints.length, 0.67, 8, false)
-                        let tubeGeometryMirrored = new TubeGeometry(pathMirrored, curvePointsMirrored.length, 0.67, 8, false)
-                        let tubeMaterial = new MeshPhongMaterial( { color: new Color(0xADDFFF) })
-                        this.mesh.add(new Mesh(tubeGeometry, tubeMaterial))
-                        this.meshMirrored.add(new Mesh(tubeGeometryMirrored, tubeMaterial))
 
-        
-                        lastWidth = width
+                        if (curvePoints.length > 1) {
+                
+                            let path: CatmullRomCurve3 = new CatmullRomCurve3(curvePoints)
+                            let pathMirrored: CatmullRomCurve3 = new CatmullRomCurve3(curvePointsMirrored)
+            
+                            //let lineGeometry = new BufferGeometry().setFromPoints(linePoints)
+                            // let tubeGeometry = new TubeGeometry(path, curvePoints.length, (width + lastWidth) * 0.0002, 8, false)
+                            let tubeGeometry = new TubeGeometry(path, curvePoints.length, 0.03, 8, false)
+                            let tubeGeometryMirrored = new TubeGeometry(pathMirrored, curvePointsMirrored.length, 0.03, 8, false)
+                            let tubeMaterial = new MeshPhongMaterial( { color: new Color(0xADDFFF) })
+                            this.mesh.add(new Mesh(tubeGeometry, tubeMaterial))
+                            this.meshMirrored.add(new Mesh(tubeGeometryMirrored, tubeMaterial))
+
+            
+                            lastWidth = width
+
+                        }
         
                     }
                     
@@ -157,20 +168,20 @@ export default class ChemnitzOSM {
                         
                         Object.values(feature.geometry.coordinates).forEach(coordinate => {
         
-                            let x = (coordinate[0] - offsetLat) * scale
-                            let y = (coordinate[1] - offsetLon) * scale
+                            let x = this.scale * (coordinate[0] - offsetLat) 
+                            let y = this.scale * (coordinate[1] - offsetLon) 
                             //let z = Math.sin((Math.sqrt(x**2 + y**2) / (this.size/2)) * (Math.PI/4)) * this.size
                             
                             let distanceToCenter = Math.sqrt((x**2) + (y**2))
 
-                            let radius = this.size * (1/2)
+                            let wuradius = this.radius * this.scale
 
-                            if (distanceToCenter < radius) {
+                            if (distanceToCenter < wuradius) {
 
-                                // hypothenuse is radius
+                                // hypothenuse is wuradius
                                 // ankathete is distance
-                                let z = Math.sqrt((radius**2) - (distanceToCenter ** 2)) - radius - 1
-                                let zMirrored = - (Math.sqrt((radius**2) - (distanceToCenter ** 2))) - (radius) + 1
+                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.02
+                                let zMirrored = - (Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - (wuradius) + 0.02
         
                               linePoints.push(new Vector3(x, y, z))
                               linePointsMirrored.push(new Vector3(x, y, zMirrored))
@@ -181,7 +192,7 @@ export default class ChemnitzOSM {
         
                         if (linePoints.length > 1) {
 
-                            let pointWidthFunction = function (p) { return .1 }
+                            let pointWidthFunction = function (p) { return .01 } // 5m breite Bäche
                             let lineColor = new Color(0xab00ff)
             
                             
@@ -234,8 +245,8 @@ export default class ChemnitzOSM {
 
                     Object.values(feature.geometry.coordinates).forEach(coordinate => {
 
-                        let x = (coordinate[0] - offsetLat) * scale
-                        let y = (coordinate[1] - offsetLon) * scale
+                        let x = this.scale * (coordinate[0] - offsetLat) 
+                        let y = this.scale * (coordinate[1] - offsetLon) 
                         let z = Math.sin((Math.sqrt(x**2 + y**2) / (this.size/2)) * (Math.PI/4)) * this.size
                         z = 0
 
@@ -263,19 +274,19 @@ export default class ChemnitzOSM {
 
                 Object.values(feature.geometry.coordinates).forEach(coordinate => {
 
-                    let x = (coordinate[0] - offsetLat) * scale
-                    let y = (coordinate[1] - offsetLon) * scale
+                    let x = this.scale * (coordinate[0] - offsetLat) 
+                    let y = this.scale * (coordinate[1] - offsetLon) 
                     //let z = Math.sin((Math.sqrt(x**2 + y**2) / (this.size/2)) * (Math.PI/4)) * this.size
 
                     let distanceToCenter = Math.sqrt((x**2) + (y**2))
 
-                    let radius = this.size * (1/2)
+                    let wuradius = this.radius * this.scale
 
-                    if (distanceToCenter < radius) {
+                    if (distanceToCenter < wuradius) {
 
-                        // hypothenuse is radius
+                        // hypothenuse is wuradius
                         // ankathete is distance
-                        let z = Math.sqrt((radius**2) - (distanceToCenter ** 2)) - radius
+                        let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius
 
                         linePoints.push(new Vector3(x, y, z))
 
@@ -288,19 +299,19 @@ export default class ChemnitzOSM {
 
                 if (feature.properties.highway === 'primary') {
                     pointWidthFunction = function (p) { return (lanes + lastLanes) * 0.03 }
-                    pointWidthFunction = function (p) { return 0.3 }
+                    pointWidthFunction = function (p) { return 0.024 } // 12m breite Straße
 
                     lineColor = new Color(0x5500E1)
                 }
 
                 if (feature.properties.highway === 'secondary') {
                     pointWidthFunction = function (p) { return (lanes + lastLanes) * 0.02 }
-                    pointWidthFunction = function (p) { return 0.2 }
+                    pointWidthFunction = function (p) { return 0.02 }  // 10m breite Straße
                     lineColor = new Color(0xE1673E)
                 }
 
                 if (feature.properties.highway === 'tertiary' || feature.properties.highway === 'residential') {
-                    pointWidthFunction = function (p) { return .1 }
+                    pointWidthFunction = function (p) { return .01 } // 5m breite Straße
                     lineColor = new Color(0xFEFEFE)
 
                 }
@@ -309,32 +320,47 @@ export default class ChemnitzOSM {
 
                 if (linePoints.length > 1) {
 
-                    let meshlineGeometry = new MeshLineGeometry()
-                    meshlineGeometry.setPoints(linePoints, pointWidthFunction)
+                    if (feature.properties.highway === 'tertiary' || feature.properties.highway === 'residential') {
 
-                    let meshlineMaterial = new MeshLineMaterial({ color: lineColor })
-                    /*
-                        var material = new MeshLineMaterial({
-                        map: strokeTexture,
-                        useMap: params.strokes,
-                        color: new THREE.Color(colors[~~Maf.randomInRange(0, colors.length)]),
-                        opacity: 1, //params.strokes ? .5 : 1,
-                        dashArray: params.dashArray,
-                        dashOffset: params.dashOffset,
-                        dashRatio: params.dashRatio,
-                        resolution: resolution,
-                        sizeAttenuation: params.sizeAttenuation,
-                        lineWidth: params.lineWidth,
-                        depthWrite: true,
-                        depthTest: true,
-                        alphaTest: params.strokes ? 0.5 : 0,
-                        transparent: true,
-                        side: THREE.DoubleSide,
-                    })
-                    */
+                        let lineGeometry = new BufferGeometry()
+                        lineGeometry.setFromPoints(linePoints)
+                        let lineMaterial = new LineBasicMaterial({ color: 'white' })
+                        let lineInstance = new Line(lineGeometry, lineMaterial)
 
-                    let meshLineInstance = new MeshLine(meshlineGeometry, meshlineMaterial)
-                    this.mesh.add(meshLineInstance)
+                        this.mesh.add(lineInstance)
+
+                    }
+                    
+                    else {
+                        
+                        let meshlineGeometry = new MeshLineGeometry()
+                        meshlineGeometry.setPoints(linePoints, pointWidthFunction)
+
+                        let meshlineMaterial = new MeshLineMaterial({ color: lineColor })
+                        /*
+                            var material = new MeshLineMaterial({
+                            map: strokeTexture,
+                            useMap: params.strokes,
+                            color: new THREE.Color(colors[~~Maf.randomInRange(0, colors.length)]),
+                            opacity: 1, //params.strokes ? .5 : 1,
+                            dashArray: params.dashArray,
+                            dashOffset: params.dashOffset,
+                            dashRatio: params.dashRatio,
+                            resolution: resolution,
+                            sizeAttenuation: params.sizeAttenuation,
+                            lineWidth: params.lineWidth,
+                            depthWrite: true,
+                            depthTest: true,
+                            alphaTest: params.strokes ? 0.5 : 0,
+                            transparent: true,
+                            side: THREE.DoubleSide,
+                        })
+                        */
+
+                        let meshLineInstance = new MeshLine(meshlineGeometry, meshlineMaterial)
+                        this.mesh.add(meshLineInstance)
+
+                    }
 
                 }
 
