@@ -2,7 +2,7 @@ import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMate
 
 import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline'
 
-import ChemnitzGeojson from './geojson/ChemnitzFluesseUndStrassen.json'
+import ChemnitzGeojson from '../geojson/ChemnitzFluesseUndStrassen.json'
 
 import { overpassFeatures, overpassFeature } from "./ChemnitzOSM";
 

@@ -67,6 +67,21 @@ div#intro {
 
 }
 
+div#genesisDiv {
+
+  position: fixed;
+  left: 2em;
+  top: 10%;
+  text-align: left;
+  width: 30%;
+  padding: 1em;
+  background-color: #ffa62155;
+  padding-top: 0;
+
+}
+
+
+
 #scene {
   position: fixed;
   top: 0;

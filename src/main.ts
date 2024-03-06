@@ -2,11 +2,12 @@ import './style.css'
 
 import {
     Clock,
+    InstancedMesh,
     Scene
   } from 'three'
   
 // GLOBALS
-import Kreise from './Kreise/Kreise.ts'
+import Chemnitz from './Chemnitz/Chemnitz.ts'
 
 import { FBXLoader, GLTFLoader, OrbitControls } from 'three/examples/jsm/Addons.js'
 
@@ -17,46 +18,53 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 
 import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper, AxesHelper, ArrowHelper, Quaternion, MeshPhysicalMaterial } from 'three'
 
-import { getPageOverlayDiv, getOSMOverlayDiv, getGenesisDiv, getCCOverlayDiv, getKreiseOverlayDiv, getMailOverlayDiv, getDCOverlayDiv } from './htmlincludes'
+import { getPageOverlayDiv, getOSMOverlayDiv, getGenesisDiv, getCCOverlayDiv, getKreiseOverlayDiv, getMailOverlayDiv, getDCOverlayDiv, getGenesisInfoDiv } from './htmlincludes'
+import Dirigierstab from './Chemnitz/Dirigierstab.ts'
+import ChemnitzOSM from './Chemnitz/ChemnitzOSM.ts'
+import StoneForest from './Chemnitz/StoneForest.ts'
+import DerChemnitz from './Chemnitz/DerChemnitz.ts'
 
 
-import ChemnitzOSM from './ChemnitzOSM'
-import StoneForest from './StoneForest'
-import Dirigierstab from './Dirigierstab'
+const chemnitz = new Chemnitz()
+chemnitz.camera.fov = 90
 
-const kreise = new Kreise()
-
-kreise.camera.fov = 90
-kreise.scene.remove(kreise.objects.pointLight)
 
 const removeMeDiv: HTMLDivElement = document.querySelector('#removeMe') ?? document.createElement('div')
 document.body.removeChild(removeMeDiv)
 
-document.body.append(getPageOverlayDiv())
+let pageOverlayDiv: HTMLDivElement = getPageOverlayDiv()
+
+document.body.append(pageOverlayDiv)
+
 document.body.append(getOSMOverlayDiv())
 document.body.append(getCCOverlayDiv())
 document.body.append(getDCOverlayDiv())
 document.body.append(getKreiseOverlayDiv())
 
 let mailinfoDiv = getMailOverlayDiv()
+let genesisInfoDiv = getGenesisInfoDiv()
 
 document.body.append(mailinfoDiv)
+document.body.append(genesisInfoDiv)
 
-// end of HTML
+
+// end of HTML, consider use of KreiseClient
+
+chemnitz.makeMainScene()
 
 let mode = 'orbit'
 
-kreise.camera.position.set(3, 2, 3)
+chemnitz.camera.position.set(3, 2, 3)
 
-if (kreise.brightness === 0) {
-    kreise.camera.position.set(3, 2, 3)
-    kreise.camera.lookAt(0, -2, 0)
+if (chemnitz.brightness === 0) {
+    chemnitz.camera.position.set(3, 2, 3)
+    chemnitz.camera.lookAt(0, -2, 0)
 }
 
-let topColor: number = 0xfcad83
+let topColor: number = 0x9922dd
 let bottomColor: number = 0xfcd3f4
 
-if (kreise.brightness === 0) {
+if (chemnitz.brightness < 128) {
     topColor = 0x443399
     bottomColor = 0x442222
 }
@@ -105,10 +113,10 @@ uniforms[ 'topColor' ].value.copy( hemiLight.color );
 uniforms[ 'bottomColor' ].value.copy( hemiLight.groundColor );
 
 
-kreise.scene.background = new Color().setHSL( 0.6, 0, 1 );
-kreise.scene.fog = new Fog( scene.background, 1, 5000 );
+chemnitz.scene.background = new Color().setHSL( 0.6, 0, 1 );
+chemnitz.scene.fog = new Fog( scene.background, 1, 5000 );
 
-kreise.scene.fog.color.copy( uniforms[ 'bottomColor' ].value );
+chemnitz.scene.fog.color.copy( uniforms[ 'bottomColor' ].value );
 
 const skyGeo = new SphereGeometry( 4000, 32, 15 );
 const skyMat = new ShaderMaterial( {
@@ -119,123 +127,36 @@ const skyMat = new ShaderMaterial( {
 } );
 
 const sky = new Mesh( skyGeo, skyMat );
-kreise.scene.add( sky );
+chemnitz.scene.add( sky );
 
 
 // const ambientLight = new AmbientLight(new Color('white'), 1)
-const pointLight = new PointLight(new Color('white'), 40, 50, 1)
+const pointLight = new PointLight(new Color('white'), 10, 50, 1)
 
 
-if (kreise.brightness === 0) {
+if (chemnitz.brightness === 0) {
     pointLight.intensity = 10
+
+    
+
 }
 
 pointLight.position.set(2, 2, 0)
 
-kreise.scene.add(hemiLight)
-// kreise.scene.add(ambientLight)
-kreise.scene.add(pointLight)
+chemnitz.scene.add(hemiLight)
+// chemnitz.scene.add(ambientLight)
+chemnitz.scene.add(pointLight)
 
-const loader = new FBXLoader();
-//const path = require('models/idle_female.fbx')
+let derChemnitz: DerChemnitz
 
-let loadingFemaleDone: boolean = false
-let loadingFemaleWavingDone: boolean = false
-let loadingMaleDone: boolean = false
-let loadingMaleWavingDone: boolean = false
+if (chemnitz.brightness === 0)
+    derChemnitz = new DerChemnitz(chemnitz, 'Sleeping')
 
-let animationActions: AnimationAction[] = []
-
-let femaleMixer: any
-let femaleAction: any
-let femaleWaveAction: any
-
-let modelFileNamePrefix: string = 'Idle_'
-if (kreise.brightness == 0) {
-    modelFileNamePrefix = 'Sleeping_'
-}
-
-loader.load( 'models/' + modelFileNamePrefix + 'female.fbx', function ( female ) {
-
-    female.name = "female"
-    female.scale.set(0.01, 0.01, 0.01)
-    female.position.set(0,0,0)
-    female.rotateY(-Math.PI/3)
-
-    femaleMixer = new AnimationMixer(female)
-    femaleAction = femaleMixer.clipAction(female.animations[0])
-
-
-    animationActions.push(femaleAction)
-
-    loadingFemaleDone = true
-
-    // femaleAction.play()
-    kreise.scene.add(female);
-
-    // console.log(female)
-
-    let children = []
-
-    children[0] = female.getObjectByName('Beta_Surface')
-    children[1] = female.getObjectByName('Beta_Joints')
-    children[0].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
-    children[1].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
-
-
-    loader.load( 'models/waving.fbx', function ( wavingObject ) {
-
-        femaleWaveAction = femaleMixer.clipAction(wavingObject.animations[0])
-        femaleWaveAction.timeScale = 5
-
-    })
-
-} );
+else
+    derChemnitz = new DerChemnitz(chemnitz, 'Idle')
 
 
 
-let maleMixer: any
-let maleAction: any
-let maleWaveAction: any
-
-loader.load( 'models/' + modelFileNamePrefix + 'male.fbx', function ( male ) {
-
-    male.name = "male"
-    male.scale.set(0.01, 0.01, 0.01)
-    male.position.set(0,0,0)
-    male.rotateY(-Math.PI/3)
-
-    maleMixer = new AnimationMixer(male)
-    maleAction = maleMixer.clipAction(male.animations[0])
-    if (modelFileNamePrefix == 'Sleeping_') maleAction = maleMixer.clipAction(male.animations[1])
-    
-    // console.log(male)
-
-    animationActions.push(maleAction)
-
-    loadingMaleDone = true
-
-    // 
-    kreise.scene.add( male );
-
-    let children = []
-
-    children[0] = male.getObjectByName('Alpha_Surface')
-    children[1] = male.getObjectByName('Alpha_Joints')
-    children[0].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
-    children[1].material = new MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.8 })
-
-
-
-    loader.load( 'models/waving.fbx', function ( wavingObject ) {
-
-        maleWaveAction = maleMixer.clipAction(wavingObject.animations[0])
-        //maleWaveAction.timeScale = 5
-
-    })
-
-
-} );
 
 const gltfloader = new GLTFLoader()
 
@@ -248,21 +169,21 @@ gltfloader.load('models/german_post_box.glb', function (postbox) {
     postboxModel.rotateY(Math.PI * .8)
     postboxModel.scale.set (0.01, 0.01, 0.01)
 
-    kreise.scene.add(postboxModel)
+    chemnitz.scene.add(postboxModel)
     
 
     const postboxHelper: BoxHelper = new BoxHelper(postboxModel, 'orange')
     postboxHelper.name = 'postboxHelper'
     postboxHelper.layers.set(1)
 
-    kreise.scene.add(postboxHelper)
+    chemnitz.scene.add(postboxHelper)
 
     const postboxSelectedBox: BoxHelper = new BoxHelper(postboxModel, 'orange')
     postboxSelectedBox.name = 'postboxSelectedBox'
     postboxSelectedBox.layers.set(0)
     postboxSelectedBox.visible = false
 
-    kreise.scene.add(postboxSelectedBox)
+    chemnitz.scene.add(postboxSelectedBox)
 
 })
 
@@ -275,32 +196,32 @@ gltfloader.load('models/mfp_office_printer.glb', function (printer) {
     printerModel.rotateY(-Math.PI * .2)
     printerModel.scale.set (0.005, 0.005, 0.005)
 
-    if (kreise.brightness === 255) {
-        kreise.scene.add(printerModel)
+    if (chemnitz.brightness === 255) {
+        chemnitz.scene.add(printerModel)
     }
 
     const printerHelper: BoxHelper = new BoxHelper(printerModel, 'blue')
     printerHelper.name = 'printerHelper'
     printerHelper.layers.set(1)
-    kreise.scene.add(printerHelper)
+    chemnitz.scene.add(printerHelper)
 
     const printerSelectedBox: BoxHelper = new BoxHelper(printerModel, 'blue')
     printerSelectedBox.name = 'printerSelectedBox'
     printerSelectedBox.layers.set(0)
     printerSelectedBox.visible = false
 
-    kreise.scene.add(printerSelectedBox)
+    chemnitz.scene.add(printerSelectedBox)
 
 })
 
 
 
-let cameraControls: OrbitControls = new OrbitControls(kreise.camera, kreise.canvas)
+let cameraControls: OrbitControls = new OrbitControls(chemnitz.camera, chemnitz.canvas)
 cameraControls.target = new Vector3(0, 1, 0)
 cameraControls.autoRotate = false
 cameraControls.autoRotateSpeed = .4
 
-if (kreise.brightness === 0) {
+if (chemnitz.brightness === 0) {
     cameraControls.target = new Vector3(0, 0, 0)
 }
 
@@ -342,10 +263,10 @@ if (import.meta.env.DEV) {
     const gridHelperInstance: GridHelper = new GridHelper(40, 40, 'orange', 'darkblue')
     gridHelperInstance.position.y = -0.02
     gridHelperInstance.visible = true
-    kreise.scene.add(gridHelperInstance)
+    chemnitz.scene.add(gridHelperInstance)
 
     const axesHelperInstance: AxesHelper = new AxesHelper(5)
-    kreise.scene.add(axesHelperInstance)
+    chemnitz.scene.add(axesHelperInstance)
 
 }
 */
@@ -359,7 +280,7 @@ const pointerPx = new Vector2(0,0);
 let dirigierstab = new Dirigierstab().mesh
 dirigierstab.position.set (-1,0,0)
 
-kreise.scene.add(dirigierstab)
+chemnitz.scene.add(dirigierstab)
 
 // arrowHelper.setDirection(raycaster.ray.direction)
 // arrowHelper.position.set(raycaster.ray.origin.x, raycaster.ray.origin.y, raycaster.ray.origin.z)
@@ -377,7 +298,7 @@ function onPointerMove( event ) {
 	pointer.y = - ( event.offsetY / window.innerHeight ) * 2 + 1; // from -1 to 1
 
     pointerPx.x = event.offsetX
-    pointerPx.y = event.offsetX
+    pointerPx.y = event.offsetY
 
     // console.log(pointer)
 
@@ -403,14 +324,16 @@ function onSelectedClick ( event ) {
     if (printerSelected === true && mode === 'orbit') {
 
         mode = 'genesis'
-        kreise.camera.position.set(-2, 1.5, -.8)
+        chemnitz.camera.position.set(-2, 1, 1)
         cameraControls.target.set(0,0.5,0)
         cameraControls.autoRotate = false
 
-        maleAction.stop()
-        femaleAction.stop()
+        derChemnitz.maleAction.stop()
+        derChemnitz.femaleAction.stop()
 
         document.body.append(getGenesisDiv())
+
+        pageOverlayDiv.style.visibility = 'hidden'
 
         return
 
@@ -419,17 +342,20 @@ function onSelectedClick ( event ) {
     if (printerSelected === true && mode === 'genesis') {
 
         mode = 'orbit'
-        kreise.camera.position.set(2, 1, 2)
+        chemnitz.camera.position.set(2, 1, 2)
         cameraControls.target = new Vector3(0, 1, 0)
         cameraControls.autoRotate = true
 
 
-        maleAction.play()
-        femaleAction.play()
+        derChemnitz.maleAction.play()
+        derChemnitz.femaleAction.play()
 
         let genesisDiv = document.querySelector('#genesisDiv') ?? document.createElement('div')
         document.body.removeChild(genesisDiv)
     
+        pageOverlayDiv.style.visibility = 'visible'        
+
+
         return
 
     }
@@ -440,16 +366,66 @@ window.addEventListener( 'click', onSelectedClick );
 
 
 let chemnitzOSM = new ChemnitzOSM()
-kreise.scene.add(chemnitzOSM.mesh)
+chemnitz.scene.add(chemnitzOSM.mesh)
+
+let chemnitzSizeHelperBox = new Box3().setFromObject(chemnitzOSM.mesh)
+let chemnitzSize = new Vector3()
+chemnitzSizeHelperBox.getSize(chemnitzSize)
 
 // let boundingSphereCityMap = chemnitzOSM.mesh.geometry.computeBoundingSphere()
 
-/*
-let stoneForest = new StoneForest()
+let stoneForest = new StoneForest(chemnitzSize.x * .90)
+let stoneForest2 = new StoneForest(chemnitzSize.x * .90)
+
 let stoneForestCurveMesh = stoneForest.curveMesh
 
-scene.add(stoneForestCurveMesh)
-*/
+stoneForestCurveMesh.rotateX(Math.PI/2)
+stoneForestCurveMesh.position.y = -chemnitzSize.x / 2
+
+// chemnitz.scene.add(stoneForestCurveMesh)
+
+let stoneForestMesh1: InstancedMesh = stoneForest.mesh1
+stoneForestMesh1.rotateX(Math.PI/2)
+stoneForestMesh1.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForestMesh1)
+
+let stoneForestMesh2: InstancedMesh = stoneForest.mesh2
+stoneForestMesh2.rotateX(Math.PI/2)
+stoneForestMesh2.rotateZ(Math.PI * 2 / 3)
+
+stoneForestMesh2.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForestMesh2)
+
+let stoneForestMesh3: InstancedMesh = stoneForest.mesh3
+stoneForestMesh3.rotateX(Math.PI/2)
+stoneForestMesh3.rotateZ(Math.PI * 4 /3)
+stoneForestMesh3.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForestMesh3)
+
+let stoneForest2Mesh1: InstancedMesh = stoneForest2.mesh1
+stoneForest2Mesh1.rotateX(Math.PI/2)
+stoneForest2Mesh1.rotateZ(Math.PI)
+stoneForest2Mesh1.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForest2Mesh1)
+
+let stoneForest2Mesh2: InstancedMesh = stoneForest2.mesh2
+stoneForest2Mesh2.rotateX(Math.PI/2)
+stoneForest2Mesh2.rotateZ(Math.PI * 1 / 3)
+
+stoneForest2Mesh2.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForest2Mesh2)
+
+let stoneForest2Mesh3: InstancedMesh = stoneForest2.mesh3
+stoneForest2Mesh3.rotateX(Math.PI/2)
+stoneForest2Mesh3.rotateZ(Math.PI * 5 / 3)
+stoneForest2Mesh3.position.y = -chemnitzSize.x / 2
+
+chemnitz.scene.add(stoneForest2Mesh3)
 
 //let chemnitzFluesseOSM = new ChemnitzFluesseOSM()
 // chemnitzFluesseOSM.mesh.position.y = chemnitzFluesseOSM.mesh.position.y - 1 
@@ -463,11 +439,14 @@ let animationSynced = false
 let postboxSelected = false
 let printerSelected = false
 
+let pointLightCenter: PointLight = new PointLight(new Color('orange'), 100, chemnitzSize.x / 2, .3)
+pointLightCenter.position.y = -chemnitzSize.y / 2
 
-kreise.updateBrightness()
+chemnitz.scene.add(pointLightCenter)
 
+chemnitz.updateBrightness()
 
-kreise.renderer.setAnimationLoop(function () {
+chemnitz.renderer.setAnimationLoop(function () {
 
     delta = clock.getDelta()
 
@@ -475,6 +454,9 @@ kreise.renderer.setAnimationLoop(function () {
     idleTicks += (delta * 1000)
 
     cameraControls.update(delta)
+
+    stoneForest.update(ticks)
+    stoneForest2.update(ticks)
 
     if (idleTicks > 5000) {
 
@@ -488,16 +470,16 @@ kreise.renderer.setAnimationLoop(function () {
 
     }
     
-    if (kreise.client.developerMode) {
+    if (chemnitz.client.developerMode) {
         stats.update()
         // add debug interfaces
       }
 
-    kreise.composer.render();
+    chemnitz.composer.render();
 
-    if (loadingFemaleDone && loadingMaleDone && animationSynced === false) {
-        maleAction.play()
-        femaleAction.play()
+    if (derChemnitz.loadingFemaleDone && derChemnitz.loadingMaleDone && animationSynced === false) {
+        derChemnitz.maleAction.play()
+        derChemnitz.femaleAction.play()
         animationSynced = true
     }
 
@@ -513,7 +495,6 @@ kreise.renderer.setAnimationLoop(function () {
         if (shininess > 1000) shininess = 50
 
 
-        console.log(shininess)
 
         jointColor.r = turbo_colormap_data[turboColorIndex][0] - .2
         jointColor.g = turbo_colormap_data[turboColorIndex][1] - .1
@@ -523,9 +504,9 @@ kreise.renderer.setAnimationLoop(function () {
         bodyColor.g = turbo_colormap_data[turboColorBodyIndex][1] - .5
         bodyColor.b = turbo_colormap_data[turboColorBodyIndex][2] - .4
         
-        if (loadingFemaleDone) {
+        if (derChemnitz.loadingFemaleDone) {
 
-            let female = kreise.scene.getObjectByName('female')
+            let female = chemnitz.scene.getObjectByName('female')
 
             let children = []
 
@@ -541,9 +522,9 @@ kreise.renderer.setAnimationLoop(function () {
 
         }
 
-        if (loadingMaleDone) {
+        if (derChemnitz.loadingMaleDone) {
 
-            let male = kreise.scene.getObjectByName('male')
+            let male = chemnitz.scene.getObjectByName('male')
 
             let children = []
 
@@ -565,9 +546,9 @@ kreise.renderer.setAnimationLoop(function () {
 
     }
 
-    if (loadingFemaleDone) {
-        femaleMixer.update(delta)
-        let female = kreise.scene.getObjectByName('female')
+    if (derChemnitz.loadingFemaleDone) {
+        derChemnitz.femaleMixer.update(delta)
+        let female = chemnitz.scene.getObjectByName('female')
         
         let children = []
 
@@ -602,9 +583,9 @@ kreise.renderer.setAnimationLoop(function () {
         // console.log (children)
 
     }
-    if (loadingMaleDone) {
-        maleMixer.update(delta)
-        let male = kreise.scene.getObjectByName('male')
+    if (derChemnitz.loadingMaleDone) {
+        derChemnitz.maleMixer.update(delta)
+        let male = chemnitz.scene.getObjectByName('male')
 
         let children = []
         children[0] = male.getObjectByName('Alpha_Surface')
@@ -654,21 +635,21 @@ kreise.renderer.setAnimationLoop(function () {
     */
 
     // update the picking ray with the camera and pointer position
-	raycaster.setFromCamera( pointer, kreise.camera );
+	raycaster.setFromCamera( pointer, chemnitz.camera );
 
 	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects( kreise.scene.children );
+	const intersects = raycaster.intersectObjects( chemnitz.scene.children );
 
     if (intersects.length != 0) {
 
-        let postboxSelectedBox = kreise.scene.getObjectByName('postboxSelectedBox') ?? {}
+        let postboxSelectedBox = chemnitz.scene.getObjectByName('postboxSelectedBox') ?? {}
 
             if (postboxSelectedBox.hasOwnProperty('visible')) {
 
                 postboxSelectedBox.visible = false
             }
     
-        let printerSelectedBox = kreise.scene.getObjectByName('printerSelectedBox') ?? {}
+        let printerSelectedBox = chemnitz.scene.getObjectByName('printerSelectedBox') ?? {}
 
         if (printerSelectedBox.hasOwnProperty('visible')) {
 
@@ -678,7 +659,11 @@ kreise.renderer.setAnimationLoop(function () {
 
         postboxSelected = false
         printerSelected = false
-        mailinfoDiv.style.visibility = 'hidden'
+
+        mailinfoDiv.style.transition = 'opacity 10s'
+        mailinfoDiv.style.opacity = '0'
+
+        genesisInfoDiv.style.visibility = 'hidden'
         
         for ( let i = 0; i < intersects.length; i ++ ) {
 
@@ -694,9 +679,11 @@ kreise.renderer.setAnimationLoop(function () {
                 }
 
                 document.body.removeChild(mailinfoDiv)
-                mailinfoDiv.style.top = (pointerPx.x).toString() + 'px'
-                mailinfoDiv.style.left = (pointerPx.y).toString() + 'px'
+//                mailinfoDiv.style.top = (pointerPx.y - 50).toString() + 'px'
+//                mailinfoDiv.style.left = (pointerPx.x - 20).toString() + 'px'
                 mailinfoDiv.style.visibility = 'visible'
+                mailinfoDiv.style.opacity = '1'
+                
                 document.body.append(mailinfoDiv)
 
             }
@@ -711,6 +698,12 @@ kreise.renderer.setAnimationLoop(function () {
 
                 }
 
+                document.body.removeChild(genesisInfoDiv)
+                genesisInfoDiv.style.top = (pointerPx.y - 50).toString() + 'px'
+                genesisInfoDiv.style.left = (pointerPx.x + 20).toString() + 'px'
+                genesisInfoDiv.style.visibility = 'visible'
+                document.body.append(genesisInfoDiv)
+
             }
 
 
@@ -721,11 +714,14 @@ kreise.renderer.setAnimationLoop(function () {
 
     else {
 
-        mailinfoDiv.style.visibility = 'hidden'
+        mailinfoDiv.style.transition = 'opacity 10s'
+        mailinfoDiv.style.opacity = '0'
+        genesisInfoDiv.style.visibility = 'hidden'
+        
 
         if (postboxSelected === true) {
             
-            let postboxSelectedBox = kreise.scene.getObjectByName('postboxSelectedBox') ?? {}
+            let postboxSelectedBox = chemnitz.scene.getObjectByName('postboxSelectedBox') ?? {}
 
             if (postboxSelectedBox.hasOwnProperty('visible')) {
 
@@ -739,7 +735,7 @@ kreise.renderer.setAnimationLoop(function () {
         if (printerSelected === true) {
             
 
-            let printerSelectedBox = kreise.scene.getObjectByName('printerSelectedBox') ?? {}
+            let printerSelectedBox = chemnitz.scene.getObjectByName('printerSelectedBox') ?? {}
 
             if (printerSelectedBox.hasOwnProperty('visible')) {
 
@@ -761,12 +757,12 @@ kreise.renderer.setAnimationLoop(function () {
     // scene.rotation.y = (Math.sin(ticks / 60000) * (Math.PI*2))
 
 
-    dirigierstab.position.set(kreise.camera.position.x, kreise.camera.position.y, kreise.camera.position.z)
+    dirigierstab.position.set(chemnitz.camera.position.x, chemnitz.camera.position.y, chemnitz.camera.position.z)
     
 //    console.log(raycaster.ray.direction)
 
     // look direction (NOT the raycast but camera target)
-    let lookDirection = new Vector3().subVectors(kreise.camera.position, cameraControls.target).normalize()
+    let lookDirection = new Vector3().subVectors(chemnitz.camera.position, cameraControls.target).normalize()
 
 
     let ratio = window.innerWidth / window.innerHeight
@@ -789,14 +785,14 @@ kreise.renderer.setAnimationLoop(function () {
 
 
 
-   if (resizeRendererToDisplaySize(kreise.renderer)) {
+   if (resizeRendererToDisplaySize(chemnitz.renderer)) {
 
-    kreise.updateCamera()
+    chemnitz.updateCamera()
 
-    kreise.composer.setSize(kreise.canvas.clientWidth, kreise.canvas.clientHeight)
+    chemnitz.composer.setSize(chemnitz.canvas.clientWidth, chemnitz.canvas.clientHeight)
 
-    if (kreise.brightness === 0) {
-      //kreise.composer.passes[1] = new UnrealBloomPass(new Vector2(kreise.canvas.clientWidth / 2, kreise.canvas.clientHeight / 2), 0.3, 0.05, 0)
+    if (chemnitz.brightness === 0) {
+      //chemnitz.composer.passes[1] = new UnrealBloomPass(new Vector2(chemnitz.canvas.clientWidth / 2, chemnitz.canvas.clientHeight / 2), 0.3, 0.05, 0)
     }
   }
 

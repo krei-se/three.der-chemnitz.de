@@ -4,7 +4,6 @@ import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline
 
 import ChemnitzGeojson from './geojson/ChemnitzFluesseUndStrassen.json'
 import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
-//import ChemnitzGeojson from './geojson/ChemnitzHighways.json'
 
 interface overpassFeatures {
     type: string
@@ -40,14 +39,13 @@ export default class ChemnitzOSM {
     center: [number, number] = [12.919292512170788, 50.832438133484864]
     size: number = 500 // 1 degree is 111km. 1 degree is 111.000 meters. we use 1 WE = 500m.
     scale: number = 222 // how many WU per degree?
-    radius: number = 0.08 // in degrees, so +/- 7 km = 14km now 10!!
+    radius: number = 0.05 // in degrees, so +/- 7 km = 14km now 10!!
 
     mesh = new Group()
     meshMirrored = new Group()
     
 
     constructor() {
-
 
         Object.values(this.geojson.features).forEach((feature: overpassFeature) => {
 

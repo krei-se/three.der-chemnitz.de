@@ -4,6 +4,7 @@
     "paths": {
       "src/*": ["./src/*"],
       "Kreise/*": ["/src/Kreise/*"],
+      "Chemnitz/*": ["/src/Chemnitz/*"],
       "textures/*": ["/src/textures/*"],
       "helpers/*": ["/src/helpers/*"],
       "models/*": ["/public/models/*"]
