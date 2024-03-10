@@ -1,16 +1,21 @@
 import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMaterial, CatmullRomCurve3, Color, ShaderMaterialParameters, InstancedMesh, TextureLoader, CylinderGeometry, SphereGeometry, MeshPhysicalMaterial } from "three";
 
 import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline'
+import Chemnitz from "./Chemnitz";
 
 
 export default class Dirigierstab {
+
+    chemnitz: Chemnitz
 
     mesh: Group
     swirlPlaying: boolean = false
 
     oldTargets: Vector3[] = []
 
-    constructor() {
+    constructor(chemnitz: Chemnitz) {
+
+
         
         const geometry = new CylinderGeometry( 0.002, 0.004, 0.4, 8, 7, true )
 
@@ -24,9 +29,6 @@ export default class Dirigierstab {
             }
         
         }
-
-
-        console.log(geometry)
 
         const aquamarin = 0x77CCCC
         const erdbeerrot = 0xD14152
@@ -72,6 +74,8 @@ export default class Dirigierstab {
         
 
     }
+
+    update()
 
     playSwirl(starttick) {
 

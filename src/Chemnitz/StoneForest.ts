@@ -87,7 +87,7 @@ export default class StoneForest {
         let arcStart: number = 0 // Math.PI/2 - Math.acos((this.innerRadius / 2) / (this.size / 2)) // for 20 and 500 -> 1 / 24 th approx 1/24 Pi / 2
         let arcEnd: number = Math.PI // Math.PI/2 + Math.acos((this.innerRadius / 2) / (this.size / 2))
         
-        console.log("arc", arcStart, arcEnd)
+        // console.log("arc", arcStart, arcEnd)
 
         
         for (let globeSegment: number = 1; globeSegment <= globeSegments; globeSegment++) {

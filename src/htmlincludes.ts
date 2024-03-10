@@ -1,6 +1,5 @@
 import derchemnitzLogo from './logo.svg'
 import kreiseLogo from './kreise.svg'
-import Genesis from './Chemnitz/Genesis'
 
 export function getPageOverlayDiv (): HTMLDivElement {
 
@@ -19,7 +18,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
   const logoImg: HTMLImageElement = document.createElement('img')
   logoImg.setAttribute('src', derchemnitzLogo)
   logoImg.setAttribute('alt', 'Der-Chemnitz.de Logo')
-  logoImg.setAttribute('width', 50)
+  logoImg.setAttribute('width', '50')
   logoImg.setAttribute('height', 'auto')
 
   logoImg.classList.add('logo')
@@ -54,7 +53,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
 
   const kreiseImg: HTMLImageElement = document.createElement('img')
   kreiseImg.setAttribute('src', kreiseLogo)
-  kreiseImg.setAttribute('width', 150)
+  kreiseImg.setAttribute('width', '150')
   kreiseImg.setAttribute('height', 'auto')
   kreiseImg.setAttribute('id', 'kreiseLogo')
   
@@ -116,7 +115,9 @@ export function getMailOverlayDiv (): HTMLDivElement {
 
   let mailinfoDiv = document.createElement('div')
   mailinfoDiv.innerHTML = 'Schreiben Sie an Der-Chemnitz:<br> <a href="mailto:post@der-chemnitz.de">post@der-chemnitz.de</a>'
+  mailinfoDiv.id = 'mailInfoDiv'
 
+  mailinfoDiv.classList.add('applyInvertFilter')
   mailinfoDiv.style.zIndex = '100'
   mailinfoDiv.style.fontSize = '14'
   mailinfoDiv.style.position = 'fixed'
@@ -133,8 +134,10 @@ export function getMailOverlayDiv (): HTMLDivElement {
 export function getGenesisInfoDiv (): HTMLDivElement {
 
   let genesisInfoDiv = document.createElement('div')
+  genesisInfoDiv.id = 'genesisInfoDiv'
   genesisInfoDiv.innerHTML = "Genesis-Modus"
 
+  genesisInfoDiv.classList.add('applyInvertFilter')
   genesisInfoDiv.style.zIndex = '100'
   genesisInfoDiv.style.fontSize = '12'
   genesisInfoDiv.style.position = 'fixed'
@@ -148,7 +151,9 @@ export function getGenesisInfoDiv (): HTMLDivElement {
 export function getKreiseOverlayDiv (): HTMLDivElement {
 
   let kreiseDiv = document.createElement('div')
+  kreiseDiv.id = 'KreiseDiv'
   kreiseDiv.style.alignItems = 'top'
+  kreiseDiv.classList.add('applyInvertFilter')
 
   const kreiseDesc1 = document.createElement('p')
   kreiseDesc1.innerHTML = "Running on "
@@ -166,7 +171,7 @@ export function getKreiseOverlayDiv (): HTMLDivElement {
 
   const kreiseImg: HTMLImageElement = document.createElement('img')
   kreiseImg.setAttribute('src', kreiseLogo)
-  kreiseImg.setAttribute('width', 150)
+  kreiseImg.setAttribute('width', '150')
   kreiseImg.setAttribute('height', 'auto')
   kreiseImg.setAttribute('id', 'kreiseLogo')
   
@@ -193,6 +198,9 @@ export function getKreiseOverlayDiv (): HTMLDivElement {
 export function getCCOverlayDiv (): HTMLDivElement {
 
   let ccDiv = document.createElement('div')
+  ccDiv.id = 'ccDiv'
+
+  ccDiv.classList.add('applyInvertFilter')
 
   const ccParagraph = document.createElement('p');
   ccParagraph.innerHTML = '<a href="cccredits.html"><img id="ccLogo" src="ccheart.svg" width="50" height="auto"></a>'
@@ -208,9 +216,12 @@ export function getCCOverlayDiv (): HTMLDivElement {
 export function getDCOverlayDiv (): HTMLDivElement {
 
   let dcDiv = document.createElement('div')
+  dcDiv.id = 'dcDiv'
+
+  dcDiv.classList.add('applyInvertFilter')
 
   const dcParagraph = document.createElement('p');
-  dcParagraph.innerHTML = 'Der-Chemnitz.de Version 0.0.8 )Genesis('
+  dcParagraph.innerHTML = 'Der-Chemnitz.de Version 0.0.10 )Editor²('
   
   dcDiv.append(dcParagraph)
   dcDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; left: 1em;'
@@ -223,6 +234,9 @@ export function getDCOverlayDiv (): HTMLDivElement {
 export function getOSMOverlayDiv (): HTMLDivElement {
 
   let osmDiv = document.createElement('div')
+  osmDiv.id = 'osmDiv'
+
+  osmDiv.classList.add('applyInvertFilter')
 
   osmDiv.innerHTML = 'Karte hergestellt aus <a href="https://www.openstreetmap.org">OpenStreetMap-Daten</a> | Lizenz: <a href="https://opendatacommons.org/licenses/odbl/">Open Database License (ODbL)</a>'
   osmDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; right: 1em;'
@@ -236,64 +250,7 @@ export function getGenesisDiv (): HTMLDivElement {
   let genesisDiv = document.createElement('div')
   genesisDiv.id = 'genesisDiv'
 
-  let genesisHeader = document.createElement('h2')
-  genesisHeader.innerHTML = 'Genesis (im Aufbau)'
-  let genesisChapterOne = document.createElement('p')
-
-  genesisChapterOne.innerHTML = 'Grund-Ton Art:'
-
   
-  let genesisCirclesList = document.createElement('ul')
-  let genesisCircles = ['Einzeller', 'Mehrzeller', 'Wirbellose', 'Wirbeltier', 'Primat', 'Frühmensch', 'homo sapiens', 'Held', 'Höheres Wesen', 'Gottheit', 'Singularität', 'Schöpfer']
-
-  genesisCircles.forEach((circleName: string, index: number) => {
-    
-    let genesisCirclesItem = document.createElement('li')
-    genesisCirclesItem.innerHTML = index+1 + ": " + circleName
-    genesisCirclesList.append(genesisCirclesItem)
-
-  });
-
-
-  genesisDiv.append(genesisHeader)
-  genesisDiv.append(genesisChapterOne)
- // genesisDiv.append(genesisCirclesList)
-
-  let circlesAmountOptions: HTMLSelectElement = document.createElement('select')
-  genesisCircles.forEach((circleName, circleAmount: number) => {
-    let circleAmountOption = new Option(circleName, circleAmount.toString())
-    if (circleAmount !== 7) circleAmountOption.disabled = true
-    if (circleAmount === 7) circleAmountOption.selected = true
-    circlesAmountOptions.add(circleAmountOption)
-  })
-
-  genesisDiv.append(circlesAmountOptions)
-  
-  genesisDiv.style.cssText = 'font-size: 12pt; position: fixed; bottom: 10%; right: 3em;'
-
-  let genesis = new Genesis()
-
-  let circleRangesForm = document.createElement('form')
-
-  Object.values(genesis.genesis[8].parts).forEach((part, partId: number) => {
-    
-    let circleRangeName = document.createElement('p')
-    circleRangeName.innerHTML = part.name
-    
-    let circleRangeSlider = document.createElement('input');
-    circleRangeSlider.id = partId.toString()
-    circleRangeSlider.type = 'range'
-    circleRangeSlider.min = part.sizeRange[0].toString()
-    circleRangeSlider.max = part.sizeRange[1].toString()
-    circleRangeSlider.defaultValue = ((part.sizeRange[0] + part.sizeRange[1]) / 2).toString()
-    circleRangeSlider.step = '0.05'
-
-    circleRangesForm.append(circleRangeName)
-    circleRangesForm.append(circleRangeSlider)
-
-  });
-  
-  genesisDiv.append(circleRangesForm)
 
   return genesisDiv
 

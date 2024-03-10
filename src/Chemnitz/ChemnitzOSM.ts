@@ -68,13 +68,13 @@ export default class ChemnitzOSM {
 
         })
 
-        console.log(this.minLat, this.maxLat, this.minLon, this.maxLon)
+        // TODO fix SKEW console.log(this.minLat, this.maxLat, this.minLon, this.maxLon)
 
         // for the scale to work correctly, get the average of both min/max latitude and longitude
 
         // we want the smallest difference for the scale, because the map might be in different width and height
         let diffMin: number = Math.min((this.maxLat - this.minLat), (this.maxLon - this.minLon))
-        console.log(diffMin)
+        // console.log(diffMin)
 
         let cardCenter: [number, number] = [(this.maxLat + this.minLat) / 2, (this.maxLon + this.minLon) / 2]
 
