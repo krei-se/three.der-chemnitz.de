@@ -221,10 +221,11 @@ export function getDCOverlayDiv (): HTMLDivElement {
   dcDiv.classList.add('applyInvertFilter')
 
   const dcParagraph = document.createElement('p');
-  dcParagraph.innerHTML = 'Der-Chemnitz.de Version 0.0.10 )Editor²('
+  dcParagraph.style.cssText = 'vertical-align: middle;'
+  dcParagraph.innerHTML = '<a href="https://github.com/krei-se/three.der-chemnitz.de"><img src="/github-mark.svg" width=20 height="auto"/> Der-Chemnitz.de Version 0.0.10 )Editor²(</a>'
   
   dcDiv.append(dcParagraph)
-  dcDiv.style.cssText = 'font-size: 8pt; position: fixed; bottom: 0; left: 1em;'
+  dcDiv.style.cssText = 'vertical-align: middle; font-size: 9pt; position: fixed; bottom: 0; left: 1em;'
 
   return dcDiv
 
