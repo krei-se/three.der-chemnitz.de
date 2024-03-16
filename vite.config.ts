@@ -1,7 +1,7 @@
 /** @type {import('vite').UserConfig} */
 
 import { defineConfig } from 'vite';
-// import obfuscatorPlugin from 'vite-plugin-javascript-obfuscator';
+import packageJson from './package.json'
 
 export default defineConfig((configEnv) => {
   return {
@@ -18,6 +18,9 @@ export default defineConfig((configEnv) => {
         helpers: "/src/helpers",
         models: "/public/models"
       },
+    },
+    define: {
+      'import.meta.env.PACKAGE_VERSION': JSON.stringify(packageJson.version)
     }
   }
 });

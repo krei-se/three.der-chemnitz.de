@@ -62,6 +62,9 @@ export default class Chemnitz extends Kreise {
 
     this.makeHemisphere()
 
+    // Genesis Lifeform Creator customization
+    this.genesis.debugMode = this.client.developerMode
+
   }
 
   updateBrightness(brightness: number = NaN): void {
@@ -74,7 +77,11 @@ export default class Chemnitz extends Kreise {
 
   }
   
-  makeMainScene(): void {
+  async makeMainScene(): Promise<void> {
+
+    // load main map
+    this.graph.objects.chemnitzOSM = this.chemnitzOSM.mesh
+    this.scene.add(this.graph.objects.chemnitzOSM)
 
     // get size of the main map
     this.graph.objects.chemnitzSizeBox = new Box3().setFromObject(this.chemnitzOSM.mesh)
@@ -82,79 +89,85 @@ export default class Chemnitz extends Kreise {
     let chemnitzSize = new Vector3()
     this.graph.objects.chemnitzSizeBox.getSize(chemnitzSize) // unintuitive, it sets the size of the map into the vector
     
-    this.graph.objects.chemnitzSizeBoxHelper = new Box3Helper(this.graph.objects.chemnitzSizeBox)
-    this.graph.objects.chemnitzSizeBoxHelper.userData.isDebugHelper = true
-    this.graph.objects.chemnitzSizeBoxHelper.visible = false
 
-    this.scene.add(this.graph.objects.chemnitzSizeBoxHelper)
+
+    this.graph.helpers.chemnitzSizeBoxHelper = new Box3Helper(this.graph.objects.chemnitzSizeBox)
+    this.graph.helpers.chemnitzSizeBoxHelper.userData.isDebugHelper = true
+    this.graph.helpers.chemnitzSizeBoxHelper.visible = false
+    
+    this.scene.add(this.graph.helpers.chemnitzSizeBoxHelper)
 
     // this.graph.lights.ambientLight = new AmbientLight('white', 1)
-    this.graph.lights.pointLight = new PointLight('orange', 150, 150, 1.5)
-    this.graph.lights.pointLight.position.set(0, -chemnitzSize.x / 2, 0)
+
+    this.graph.lights.pointLightCenter = new PointLight(new Color('orange'), 150, chemnitzSize.x / 2, 0.8)
+    this.graph.lights.pointLightCenter.position.y = -chemnitzSize.y / 2
     
-    this.scene.add(this.graph.lights.pointLight)
+    this.scene.add(this.graph.lights.pointLightCenter)
     
+
+
+
     this.graph.objects.dirigierStab = this.dirigierStab.mesh
 
     this.scene.add(this.graph.objects.dirigierStab)
 
 
-    this.stoneForest = new StoneForest(chemnitzSize.x * .90)
-    this.stoneForest2 = new StoneForest(chemnitzSize.x * .90)
-    
-    this.graph.objects.stoneForestCurveMeshHelper = this.stoneForest.curveMesh
-    this.graph.objects.stoneForestCurveMeshHelper.rotateX(Math.PI/2)
-    this.graph.objects.stoneForestCurveMeshHelper.position.y = -chemnitzSize.x / 2
-    this.graph.objects.stoneForestCurveMeshHelper.userData.isDebugHelper = true
-    this.graph.objects.stoneForestCurveMeshHelper.visible = false
+    this.stoneForest = new StoneForest(chemnitzSize.x * 0.70)
+    this.stoneForest2 = new StoneForest(chemnitzSize.x * 0.70)
 
-    this.scene.add(this.graph.objects.stoneForestCurveMeshHelper)
-    
-    this.graph.objects.stoneForestMesh1 = this.stoneForest.mesh1
-    this.graph.objects.stoneForestMesh1.rotateX(Math.PI/2)
-    // no z rotate
-    this.graph.objects.stoneForestMesh1.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForestMesh1)
-    
-    this.graph.objects.stoneForestMesh2 = this.stoneForest.mesh2
-    this.graph.objects.stoneForestMesh2.rotateX(Math.PI/2)
-    this.graph.objects.stoneForestMesh2.rotateZ(Math.PI * 2 / 3)
-    
-    this.graph.objects.stoneForestMesh2.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForestMesh2)
-    
-    this.graph.objects.stoneForestMesh3 = this.stoneForest.mesh3
-    this.graph.objects.stoneForestMesh3.rotateX(Math.PI/2)
-    this.graph.objects.stoneForestMesh3.rotateZ(Math.PI * 4 /3)
-    this.graph.objects.stoneForestMesh3.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForestMesh3)
-    
-    this.graph.objects.stoneForest2Mesh1 = this.stoneForest2.mesh1
-    this.graph.objects.stoneForest2Mesh1.rotateX(Math.PI/2)
-    this.graph.objects.stoneForest2Mesh1.rotateZ(Math.PI)
-    this.graph.objects.stoneForest2Mesh1.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForest2Mesh1)
-    
-    this.graph.objects.stoneForest2Mesh2 = this.stoneForest2.mesh2
-    this.graph.objects.stoneForest2Mesh2.rotateX(Math.PI/2)
-    this.graph.objects.stoneForest2Mesh2.rotateZ(Math.PI * 1 / 3)
-    
-    this.graph.objects.stoneForest2Mesh2.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForest2Mesh2)
-    
-    this.graph.objects.stoneForest2Mesh3 = this.stoneForest2.mesh3
-    this.graph.objects.stoneForest2Mesh3.rotateX(Math.PI/2)
-    this.graph.objects.stoneForest2Mesh3.rotateZ(Math.PI * 5 / 3)
-    this.graph.objects.stoneForest2Mesh3.position.y = -chemnitzSize.x / 2
-    
-    this.scene.add(this.graph.objects.stoneForest2Mesh3)
+    this.stoneForest.load().then(() => {
 
+      console.log(this.stoneForest)
+        
+      this.graph.helpers.stoneForestCurveMeshHelper = this.stoneForest.curveMesh
+      this.graph.helpers.stoneForestCurveMeshHelper.rotateX(Math.PI/2)
+      this.graph.helpers.stoneForestCurveMeshHelper.position.y = -chemnitzSize.x / 2
+      this.graph.helpers.stoneForestCurveMeshHelper.userData.isDebugHelper = true
+      this.graph.helpers.stoneForestCurveMeshHelper.visible = false
+      
+      this.scene.add(this.graph.helpers.stoneForestCurveMeshHelper)
+      
+      this.graph.objects.stoneForestMesh1 = this.stoneForest.mesh1
+      this.graph.objects.stoneForestMesh1.position.y = -chemnitzSize.x / 2
+      
+      
+      this.scene.add(this.graph.objects.stoneForestMesh1)
+      
+      this.graph.objects.stoneForestMesh2 = this.stoneForest.mesh2
+      this.graph.objects.stoneForestMesh2.position.y = -chemnitzSize.x / 2
+      
+      this.scene.add(this.graph.objects.stoneForestMesh2)
+      
+      this.graph.objects.stoneForestMesh3 = this.stoneForest.mesh3
+      this.graph.objects.stoneForestMesh3.position.y = -chemnitzSize.x / 2
+      
+      this.scene.add(this.graph.objects.stoneForestMesh3)
 
+      })
+    
+    this.stoneForest2.load().then(() => {
+
+      this.graph.objects.stoneForest2Mesh1 = this.stoneForest2.mesh1
+      this.graph.objects.stoneForest2Mesh1.rotateZ(Math.PI * 1 / 3)
+      this.graph.objects.stoneForest2Mesh1.position.y = -chemnitzSize.x / 2
+      
+      this.scene.add(this.graph.objects.stoneForest2Mesh1)
+      
+      this.graph.objects.stoneForest2Mesh2 = this.stoneForest2.mesh2
+      this.graph.objects.stoneForest2Mesh2.rotateZ(Math.PI * 1 / 3)
+      
+      this.graph.objects.stoneForest2Mesh2.position.y = -chemnitzSize.x / 2
+      
+      this.scene.add(this.graph.objects.stoneForest2Mesh2)
+      
+      this.graph.objects.stoneForest2Mesh3 = this.stoneForest2.mesh3
+      this.graph.objects.stoneForest2Mesh3.rotateZ(Math.PI * 1 / 3)
+      this.graph.objects.stoneForest2Mesh3.position.y = -chemnitzSize.x / 2
+      
+      this.scene.add(this.graph.objects.stoneForest2Mesh3)
+
+    })
+  
   }
 
 
@@ -208,10 +221,10 @@ export default class Chemnitz extends Kreise {
     uniforms[ 'bottomColor' ].value.copy( this.graph.lights.hemiLight.groundColor );
     
     
-    //this.scene.background = new Color().setHSL(0.6, 0, 1)
+    this.scene.background = new Color().setHSL(0.6, 0, 1)
     this.graph.objects.fog = new Fog(this.scene.background as Color, 1, size * 1.25)
     
-    // this.scene.fog.color.copy(uniforms[ 'bottomColor' ].value)
+    this.graph.objects.fog.color.copy(uniforms[ 'bottomColor' ].value)
     
     const skyGeo = new SphereGeometry(size, 32, 15)
     
@@ -257,9 +270,9 @@ export default class Chemnitz extends Kreise {
 
     
 
-    // this.scene.add(this.graph.objects.sky);
+    this.scene.add(this.graph.objects.sky);
 
-    // this.scene.add(this.graph.lights.hemiLight)
+    this.scene.add(this.graph.lights.hemiLight)
   
 
   }

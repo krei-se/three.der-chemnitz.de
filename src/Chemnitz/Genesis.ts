@@ -3,12 +3,14 @@ import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMate
 import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline'
 
 import GenesisMap, { GenesisAbilityInterface, GenesisLevelInterface, GenesisPartInterface } from "./GenesisMap";
+import Chemnitz from "./Chemnitz";
 
 export interface GenesisInstanceInterface {
     level: GenesisLevelInterface,
     parts: {
         [name: string]: {
             part: GenesisPartInterface
+            size?: number
             offsetY?: number
         }
     },
@@ -35,6 +37,8 @@ export default class Genesis {
     instanceMap: GenesisInstanceInterface = { level: GenesisMap.levels.cyborg }
     mesh: Group = new Group()
 
+    public debugMode: boolean = false
+
     constructor(instanceMap: Partial<GenesisInstanceInterface> = {}) {
 
         this.instanceMap.level = instanceMap.level?? GenesisMap.levels.cyborg
@@ -58,6 +62,12 @@ export default class Genesis {
             
         });
         */
+
+    }
+
+    updateParts() {
+
+
 
     }
 
@@ -111,17 +121,29 @@ export default class Genesis {
 
     }
 
+    updateGenesisDebugParagraph() {
+
+        if (this.debugMode) {
+
+            let genesisDebugParagraph: HTMLParagraphElement
+            genesisDebugParagraph = document.querySelector('#genesisDebugParagraph') ?? document.createElement('p')
+            genesisDebugParagraph.id = 'genesisDebugParagraph'
+
+            genesisDebugParagraph.innerHTML =  JSON.stringify(this.instanceMap, null, 2)
+
+            this.genesisDiv.append(genesisDebugParagraph)
+
+        }
+
+    }
+
     updateGenesisDivParts() {
 
         let genesisDivPartsForm: HTMLFormElement
-        if (document.querySelector('#genesisDivParts')) {
-            genesisDivPartsForm = document.querySelector('#genesisDivParts')!
-        }
-        else {
-            genesisDivPartsForm = document.createElement('form')
-            genesisDivPartsForm.id = 'genesisDivParts'
-            this.genesisDiv.append(genesisDivPartsForm)
-        }
+        genesisDivPartsForm = document.querySelector('#genesisDivParts') ?? document.createElement('form')
+        
+        genesisDivPartsForm.id = 'genesisDivParts'
+        this.genesisDiv.append(genesisDivPartsForm)
        
         Object.entries(this.genesisDivParts).forEach(([divPartName, divPart]) => {
 
@@ -155,7 +177,6 @@ export default class Genesis {
         existingPartParagraphs = document.querySelectorAll('p.partRangeParagraph')
         let existingPartParagraphsIds: string[] = Array.from(existingPartParagraphs).map(element => element.id)
 
-        
         Object.entries(this.genesisDivParts).forEach(([divPartKey, divPart]) => {
 
             if (!existingPartParagraphsIds.includes(divPartKey)) {
@@ -172,8 +193,13 @@ export default class Genesis {
                 partRangeSlider.max = divPart.max.toString()
                 partRangeSlider.value = divPart.value.toString()
                 //partRangeSlider.defaultValue = divPart.value.toString()
-                partRangeSlider.onchange = () => console.log(partRangeSlider.value)
-                
+                partRangeSlider.onchange = () => {
+                    console.log(partRangeSlider.value)
+                    // this.instanceMap.parts[divPartKey].
+                    this.updateGenesisDebugParagraph()
+                    this.updateParts()
+
+                }
                 partRangeSlider.step = '0.01'
                 partRangeParagraph.append(partRangeSlider)
                 genesisDivPartsForm.append(partRangeParagraph)
@@ -181,7 +207,6 @@ export default class Genesis {
            }
             
         })
-
 
     }
     

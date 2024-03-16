@@ -18,7 +18,7 @@ export function getPageOverlayDiv (): HTMLDivElement {
   const logoImg: HTMLImageElement = document.createElement('img')
   logoImg.setAttribute('src', derchemnitzLogo)
   logoImg.setAttribute('alt', 'Der-Chemnitz.de Logo')
-  logoImg.setAttribute('width', '50')
+  logoImg.setAttribute('width', '100')
   logoImg.setAttribute('height', 'auto')
 
   logoImg.classList.add('logo')
@@ -222,7 +222,7 @@ export function getDCOverlayDiv (): HTMLDivElement {
 
   const dcParagraph = document.createElement('p');
   dcParagraph.style.cssText = 'vertical-align: middle;'
-  dcParagraph.innerHTML = '<a href="https://github.com/krei-se/three.der-chemnitz.de"><img src="/github-mark.svg" width=20 height="auto"/> Der-Chemnitz.de Version 0.0.10 )Editor²(</a>'
+  dcParagraph.innerHTML = '<a href="https://github.com/krei-se/three.der-chemnitz.de"><img src="/github-mark.svg" width=20 height="auto"/> Der-Chemnitz.de Version ' + import.meta.env.PACKAGE_VERSION + '</a>'
   
   dcDiv.append(dcParagraph)
   dcDiv.style.cssText = 'vertical-align: middle; font-size: 9pt; position: fixed; bottom: 0; left: 1em;'

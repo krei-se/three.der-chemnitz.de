@@ -1,16 +1,15 @@
-import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMaterial, CatmullRomCurve3, Color, ShaderMaterialParameters, MeshBasicMaterial, LineBasicMaterial } from "three";
+import { Mesh, Group, Line, Vector3, BufferGeometry, TubeGeometry, MeshPhongMaterial, CatmullRomCurve3, Color, LineBasicMaterial } from "three";
 
 import {MeshLine, MeshLineGeometry, MeshLineMaterial} from '@lume/three-meshline'
 
 import ChemnitzGeojson from './geojson/ChemnitzFluesseUndStrassen.json'
-import { LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js";
 
 interface overpassFeatures {
     type: string
     generator: string
     copyright: string
     timestamp: string
-    features: any[]
+    features: overpassFeature[]
 }
 
 interface overpassFeature {
@@ -30,7 +29,7 @@ interface overpassFeature {
 
 export default class ChemnitzOSM {
 
-    geojson: overpassFeatures = ChemnitzGeojson
+    geojson: overpassFeatures = ChemnitzGeojson as overpassFeatures
     minLat: number = 1000
     maxLat: number = 0
     minLon: number = 1000
@@ -73,12 +72,12 @@ export default class ChemnitzOSM {
         // for the scale to work correctly, get the average of both min/max latitude and longitude
 
         // we want the smallest difference for the scale, because the map might be in different width and height
-        let diffMin: number = Math.min((this.maxLat - this.minLat), (this.maxLon - this.minLon))
+        // let diffMin: number = Math.min((this.maxLat - this.minLat), (this.maxLon - this.minLon))
         // console.log(diffMin)
 
         let cardCenter: [number, number] = [(this.maxLat + this.minLat) / 2, (this.maxLon + this.minLon) / 2]
 
-        let scale = this.size / diffMin
+        // unused, we scale let scale = this.size / diffMin
         
         // this makes the offset so that the coordinates map from - to +
         let offsetLat = cardCenter[0]
@@ -128,8 +127,8 @@ export default class ChemnitzOSM {
 
                                 // hypothenuse is radius
                                 // ankathete is distance
-                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.02 // water is 10m bit below
-                                let zMirrored = -(Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - wuradius + 0.02 // water a bit below
+                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.04 // water is 10m bit below
+                                let zMirrored = -(Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - wuradius + 0.04 // water a bit below
         
                                 curvePoints.push(new Vector3(x, y, z))
                                 curvePointsMirrored.push(new Vector3(x,y,zMirrored))
@@ -178,8 +177,8 @@ export default class ChemnitzOSM {
 
                                 // hypothenuse is wuradius
                                 // ankathete is distance
-                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.02
-                                let zMirrored = - (Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - (wuradius) + 0.02
+                                let z = Math.sqrt((wuradius**2) - (distanceToCenter ** 2)) - wuradius - 0.04
+                                let zMirrored = - (Math.sqrt((wuradius**2) - (distanceToCenter ** 2))) - (wuradius) + 0.04
         
                               linePoints.push(new Vector3(x, y, z))
                               linePointsMirrored.push(new Vector3(x, y, zMirrored))
@@ -190,7 +189,7 @@ export default class ChemnitzOSM {
         
                         if (linePoints.length > 1) {
 
-                            let pointWidthFunction = function (p) { return .01 } // 5m breite Bäche
+                            let pointWidthFunction = function () { return .01 } // function allows p - 5m breite Bäche
                             let lineColor = new Color(0xab00ff)
             
                             
@@ -200,7 +199,9 @@ export default class ChemnitzOSM {
                             let meshlineMirroredGeometry = new MeshLineGeometry()
                             meshlineMirroredGeometry.setPoints(linePointsMirrored, pointWidthFunction)
             
-                            let meshlineMaterial = new MeshLineMaterial({ color: lineColor })
+                            let parameters = { color: lineColor }
+
+                            let meshlineMaterial: MeshLineMaterial = new MeshLineMaterial(parameters)
                             /*
                                 var material = new MeshLineMaterial({
                                 map: strokeTexture,
@@ -265,7 +266,7 @@ export default class ChemnitzOSM {
             
 
                 let linePoints: Vector3[] = []
-                let loop: number = 0
+                // let loop: number = 0
 
                 let lanes: number = feature.properties.lanes
                 if (lanes === 0 || lanes === 1 || lanes === undefined) lanes = lastLanes
@@ -292,24 +293,25 @@ export default class ChemnitzOSM {
                 
                 })
 
-                let pointWidthFunction = function (p) { return .1 }
+                let pointWidthFunction = function () { return .1 }
                 let lineColor = new Color(0x47E1D2)
 
                 if (feature.properties.highway === 'primary') {
-                    pointWidthFunction = function (p) { return (lanes + lastLanes) * 0.03 }
-                    pointWidthFunction = function (p) { return 0.024 } // 12m breite Straße
+                    // function(p)
+                    pointWidthFunction = function () { return (lanes + lastLanes) * 0.03 }
+                    pointWidthFunction = function () { return 0.024 } // 12m breite Straße
 
                     lineColor = new Color(0x5500E1)
                 }
 
                 if (feature.properties.highway === 'secondary') {
-                    pointWidthFunction = function (p) { return (lanes + lastLanes) * 0.02 }
-                    pointWidthFunction = function (p) { return 0.02 }  // 10m breite Straße
+                    pointWidthFunction = function () { return (lanes + lastLanes) * 0.02 }
+                    pointWidthFunction = function () { return 0.02 }  // 10m breite Straße
                     lineColor = new Color(0xE1673E)
                 }
 
                 if (feature.properties.highway === 'tertiary' || feature.properties.highway === 'residential') {
-                    pointWidthFunction = function (p) { return .01 } // 5m breite Straße
+                    pointWidthFunction = function () { return .01 } // 5m breite Straße
                     lineColor = new Color(0xFEFEFE)
 
                 }
@@ -333,6 +335,8 @@ export default class ChemnitzOSM {
                         
                         let meshlineGeometry = new MeshLineGeometry()
                         meshlineGeometry.setPoints(linePoints, pointWidthFunction)
+
+
 
                         let meshlineMaterial = new MeshLineMaterial({ color: lineColor })
                         /*

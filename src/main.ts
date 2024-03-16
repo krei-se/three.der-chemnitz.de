@@ -1,11 +1,7 @@
 import './style.css'
 
-import {
-    Clock,
-    InstancedMesh,
-    Scene
-  } from 'three'
-  
+import { Clock, Color, PointLight, Vector3, Raycaster, Vector2, BoxHelper } from 'three'
+
 // GLOBALS
 import Chemnitz from './Chemnitz/Chemnitz.ts'
 
@@ -16,12 +12,8 @@ import { resizeRendererToDisplaySize } from './helpers/responsiveness'
 // @ts-expect-errors module without declarations
 import Stats from 'three/examples/jsm/libs/stats.module'
 
-import { AmbientLight, AnimationAction, AnimationClip, AnimationMixer, BackSide, Group, CircleGeometry, Clock, Color, Fog, HemisphereLight, Mesh, MeshDepthMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Scene, ShaderMaterial, SphereGeometry, TextureLoader, Vector3, WebGLRenderTarget, WebGLRenderer, GridHelper, Box3, Object3D, Box3Helper, Raycaster, Vector2, BoxHelper, AxesHelper, ArrowHelper, Quaternion, MeshPhysicalMaterial } from 'three'
 
-import { getPageOverlayDiv, getOSMOverlayDiv, getGenesisDiv, getCCOverlayDiv, getKreiseOverlayDiv, getMailOverlayDiv, getDCOverlayDiv, getGenesisInfoDiv } from './htmlincludes'
-import Dirigierstab from './Chemnitz/Dirigierstab.ts'
-import ChemnitzOSM from './Chemnitz/ChemnitzOSM.ts'
-import StoneForest from './Chemnitz/StoneForest.ts'
+import { getPageOverlayDiv, getOSMOverlayDiv, getCCOverlayDiv, getKreiseOverlayDiv, getMailOverlayDiv, getDCOverlayDiv, getGenesisInfoDiv } from './htmlincludes'
 import DerChemnitz from './Chemnitz/DerChemnitz.ts'
 
 
@@ -63,9 +55,6 @@ const pointLight = new PointLight(new Color('white'), 10, 50, 1)
 
 if (chemnitz.brightness === 0) {
     pointLight.intensity = 10
-
-    
-
 }
 
 
@@ -77,6 +66,8 @@ if (chemnitz.brightness === 0) {
 pointLight.position.set(2, 2, 0)
 
 chemnitz.scene.add(pointLight)
+
+console.log(import.meta.env)
 
 let derChemnitz: DerChemnitz
 
@@ -194,16 +185,16 @@ const pointerPx = new Vector2(0,0);
 
 let idleTicks: number = 0
 
-function onPointerMove( event ) {
+let onPointerMove = ( e: MouseEvent ) => {
 
 	// calculate pointer position in normalized device coordinates
 	// (-1 to +1) for both components
 
-	pointer.x = ( event.offsetX / window.innerWidth ) * 2 - 1; // from -1 to 1
-	pointer.y = - ( event.offsetY / window.innerHeight ) * 2 + 1; // from -1 to 1
+	pointer.x = ( e.offsetX / window.innerWidth ) * 2 - 1; // from -1 to 1
+	pointer.y = - ( e.offsetY / window.innerHeight ) * 2 + 1; // from -1 to 1
 
-    pointerPx.x = event.offsetX
-    pointerPx.y = event.offsetY
+    pointerPx.x = e.offsetX
+    pointerPx.y = e.offsetY
 
     // console.log(pointer)
 
@@ -214,7 +205,7 @@ function onPointerMove( event ) {
 
 window.addEventListener( 'pointermove', onPointerMove );
 
-function onSelectedClick ( event ) {
+let onSelectedClick = (e: MouseEvent) => {
 
     if (postboxSelected === true) {
 
@@ -270,31 +261,10 @@ function onSelectedClick ( event ) {
 window.addEventListener( 'click', onSelectedClick );
 
 
-let chemnitzOSM = new ChemnitzOSM()
-chemnitz.scene.add(chemnitzOSM.mesh)
-
-let chemnitzSizeHelperBox = new Box3().setFromObject(chemnitzOSM.mesh)
-let chemnitzSize = new Vector3()
-chemnitzSizeHelperBox.getSize(chemnitzSize)
-
-// let boundingSphereCityMap = chemnitzOSM.mesh.geometry.computeBoundingSphere()
-
-
-//let chemnitzFluesseOSM = new ChemnitzFluesseOSM()
-// chemnitzFluesseOSM.mesh.position.y = chemnitzFluesseOSM.mesh.position.y - 1 
-// chemnitzFluesseOSM.mesh.position.x = chemnitzFluesseOSM.mesh.position.x - 6 
-
-//scene.add(chemnitzFluesseOSM.mesh)
-
 let delta: number = 0
 
 let postboxSelected = false
 let printerSelected = false
-
-let pointLightCenter: PointLight = new PointLight(new Color('orange'), 100, chemnitzSize.x / 2, .3)
-pointLightCenter.position.y = -chemnitzSize.y / 2
-
-chemnitz.scene.add(pointLightCenter)
 
 chemnitz.updateBrightness()
 
