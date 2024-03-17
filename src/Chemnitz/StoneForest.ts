@@ -60,7 +60,7 @@ export default class StoneForest {
         const loadFBXModel = () => {
             return new Promise<void>((resolve, reject) => {
 
-                const timeOut = setTimeout(() => { reject(new Error("Loading timed out")) }, 5000)
+                const timeOut = setTimeout(() => { reject(new Error("Loading timed out")) }, 10000)
 
                 const loader = new FBXLoader();
                 loader.load( 'models/stoneforest1.fbx', (stoneforestFBX) => {
